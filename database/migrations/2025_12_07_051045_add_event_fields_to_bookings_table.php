@@ -1,0 +1,24 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::table('bookings', function (Blueprint $table) {
+            $table->string('event_name')->nullable()->after('purpose');
+            $table->string('organizer')->nullable()->after('event_name');
+            $table->boolean('cancellation_requested')->default(false)->after('organizer');
+            $table->enum('cancellation_status', ['pending', 'approved', 'rejected'])->nullable()->after('cancellation_requested');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('bookings', function (Blueprint $table) {
+            $table->dropColumn(['event_name', 'organizer', 'cancellation_requested', 'cancellation_status']);
+        });
+    }
+};

@@ -12,6 +12,7 @@
     <p class="auth-subtitle">Masuk ke akun Anda dan mulai reservasi ruangan dengan mudah.</p>
 
     <form id="loginForm" class="auth-form">
+        @csrf
         <!-- Email -->
         <div class="form-group">
             <label for="email">Email</label>

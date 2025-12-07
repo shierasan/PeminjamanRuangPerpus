@@ -149,7 +149,8 @@ p {
 }
 
 .section {
-  padding: var(--spacing-4xl) 0;
+  padding: 0;
+  /* Remove large padding */
 }
 
 .section-alt {
@@ -164,10 +165,13 @@ p {
   padding: var(--spacing-lg) 0;
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 100;
+  /* Lower than dropdown! */
   box-shadow: var(--shadow-sm);
   border-bottom: 3px solid var(--color-primary);
   transition: all var(--transition-base);
+  overflow: visible;
+  /* CRITICAL: Allow dropdown to overflow! */
 }
 
 .header.scrolled {
@@ -179,6 +183,8 @@ p {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  overflow: visible;
+  /* CRITICAL: Allow dropdown to overflow! */
 }
 
 .logo {
@@ -244,7 +250,7 @@ p {
   transform: rotate(180deg);
 }
 
-/* Dropdown Menu */
+/* Dropdown Menu - Pure CSS Hover with proper hover area! */
 .dropdown-menu {
   position: absolute;
   top: 100%;
@@ -259,9 +265,12 @@ p {
   visibility: hidden;
   transform: translateY(-10px);
   transition: all var(--transition-base);
+  z-index: 9999;
 }
 
-.nav-item.active .dropdown-menu {
+/* Show dropdown on hover of nav-item OR dropdown-menu itself! */
+.nav-item:hover .dropdown-menu,
+.dropdown-menu:hover {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
