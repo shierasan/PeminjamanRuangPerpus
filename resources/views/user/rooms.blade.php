@@ -234,7 +234,8 @@
                                     </div>
                                     <div style="flex: 1;">
                                         <h4 style="font-weight: 700; margin-bottom: 0.25rem; font-size: 0.95rem;">
-                                            {{ $popular->name }}</h4>
+                                            {{ $popular->name }}
+                                        </h4>
                                         <p
                                             style="color: #B8985F; font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;">
                                             <span style="width: 6px; height: 6px; background: #B8985F; border-radius: 50%;"></span>
@@ -253,8 +254,31 @@
     </div>
 
     <script>
-        // Calendar implementation
+        // Calendar implementation with real booking data
         let currentDate = new Date();
+        const allBookings = @json($allBookings);
+        const allClosures = @json($allClosures);
+        const totalRooms = {{ $totalRooms }};
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        function isSunday(year, month, day) {
+            const date = new Date(year, month, day);
+            return date.getDay() === 0;
+        }
+
+        function isPastDate(year, month, day) {
+            const date = new Date(year, month, day);
+            return date < today;
+        }
+
+        function getBookingInfo(dateStr) {
+            return allBookings[dateStr] || { count: 0, approved_count: 0, rooms_booked: 0 };
+        }
+
+        function getClosureInfo(dateStr) {
+            return allClosures[dateStr] || { all_rooms_closed: false, has_closures: false, count: 0 };
+        }
 
         function renderCalendar() {
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
@@ -270,8 +294,9 @@
 
             // Day headers
             const dayHeaders = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-            dayHeaders.forEach(day => {
-                calendarHTML += `<div style="font-weight: 600; font-size: 0.75rem; color: #666; padding: 0.5rem 0; text-align: center;">${day}</div>`;
+            dayHeaders.forEach((day, index) => {
+                const color = index === 6 ? '#EF4444' : '#666';
+                calendarHTML += `<div style="font-weight: 600; font-size: 0.75rem; color: ${color}; padding: 0.5rem 0; text-align: center;">${day}</div>`;
             });
 
             // Empty cells before first day
@@ -281,27 +306,48 @@
             }
 
             // Days
-            const today = new Date();
             for (let day = 1; day <= daysInMonth; day++) {
-                const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-                const randomStatus = Math.random();
-                let bgColor = 'transparent';
-                let textColor = '#1a1a1a';
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isCurrentDay = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+                const bookingInfo = getBookingInfo(dateStr);
+                const closureInfo = getClosureInfo(dateStr);
 
-                if (day >= today.getDate() && month === today.getMonth()) {
-                    if (randomStatus > 0.7) {
-                        bgColor = '#10b981';
-                        textColor = 'white';
-                    } else if (randomStatus > 0.4) {
-                        bgColor = '#F59E0B';
-                        textColor = 'white';
-                    } else {
-                        bgColor = '#EF4444';
-                        textColor = 'white';
-                    }
+                let bgColor = '#10b981'; // Default: Green (available)
+                let textColor = 'white';
+
+                // Past dates - grey
+                if (isPastDate(year, month, day)) {
+                    bgColor = '#e5e7eb';
+                    textColor = '#9ca3af';
                 }
+                // Sunday - red (closed)
+                else if (isSunday(year, month, day)) {
+                    bgColor = '#EF4444';
+                    textColor = 'white';
+                }
+                // All rooms closed (whole day) - dark red/maroon
+                else if (closureInfo.all_rooms_closed) {
+                    bgColor = '#991b1b';
+                    textColor = 'white';
+                }
+                // Has some closures (partial) - yellow
+                else if (closureInfo.has_closures) {
+                    bgColor = '#F59E0B';
+                    textColor = 'white';
+                }
+                // All rooms booked - red (if rooms_booked >= totalRooms)
+                else if (bookingInfo.rooms_booked >= totalRooms && totalRooms > 0) {
+                    bgColor = '#EF4444';
+                    textColor = 'white';
+                }
+                // Some rooms have bookings - yellow
+                else if (bookingInfo.rooms_booked > 0) {
+                    bgColor = '#F59E0B';
+                    textColor = 'white';
+                }
+                // Available - green (default)
 
-                calendarHTML += `<div style="padding: 0.5rem; font-size: 0.875rem; text-align: center; ${isToday ? 'font-weight: 700; border: 2px solid #B8985F;' : ''} background-color: ${bgColor}; color: ${textColor}; border-radius: 0.25rem; cursor: pointer;">${day}</div>`;
+                calendarHTML += `<div style="padding: 0.5rem; font-size: 0.875rem; text-align: center; ${isCurrentDay ? 'font-weight: 700; border: 2px solid #B8985F;' : ''} background-color: ${bgColor}; color: ${textColor}; border-radius: 0.25rem;">${day}</div>`;
             }
 
             document.getElementById('calendarGrid').innerHTML = calendarHTML;

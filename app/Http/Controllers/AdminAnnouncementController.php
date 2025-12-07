@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Announcement;
+use App\Models\User;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class AdminAnnouncementController extends Controller
@@ -27,10 +29,22 @@ class AdminAnnouncementController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        Announcement::create($validated);
+        $announcement = Announcement::create($validated);
+
+        // Send notification to all users (not admins)
+        $users = User::where('role', 'user')->get();
+        foreach ($users as $user) {
+            Notification::create([
+                'user_id' => $user->id,
+                'type' => 'announcement',
+                'title' => 'Pengumuman Baru',
+                'message' => $announcement->title,
+                'link' => route('user.announcements.show', $announcement->id),
+            ]);
+        }
 
         return redirect()->route('admin.announcements.index')
-            ->with('success', 'Pengumuman berhasil ditambahkan');
+            ->with('success', 'Pengumuman berhasil ditambahkan dan notifikasi dikirim ke semua pengguna');
     }
 
     public function edit(Announcement $announcement)

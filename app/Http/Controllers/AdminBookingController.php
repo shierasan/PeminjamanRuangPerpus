@@ -57,7 +57,7 @@ class AdminBookingController extends Controller
             'type' => 'booking_approved',
             'title' => 'Peminjaman Disetujui',
             'message' => 'Peminjaman ruangan ' . $booking->room->name . ' pada ' . $booking->booking_date->format('d M Y') . ' telah disetujui.',
-            'link' => route('user.history'),
+            'link' => route('user.bookings.detail', $booking->id),
         ]);
 
         return redirect()->route('admin.bookings.index')
@@ -85,7 +85,7 @@ class AdminBookingController extends Controller
             'type' => 'booking_rejected',
             'title' => 'Peminjaman Ditolak',
             'message' => 'Peminjaman ruangan ' . $booking->room->name . ' pada ' . $booking->booking_date->format('d M Y') . ' ditolak. Alasan: ' . $request->input('note'),
-            'link' => route('user.history'),
+            'link' => route('user.bookings.detail', $booking->id),
         ]);
 
         return redirect()->route('admin.bookings.index')

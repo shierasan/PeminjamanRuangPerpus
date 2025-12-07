@@ -67,7 +67,7 @@
                     </a>
 
                     {{-- Lihat Saran & Aspirasi Button --}}
-                    <a href="#"
+                    <a href="{{ route('admin.aspirations.index') }}"
                         style="display: flex; align-items: center; padding: 1rem 1.5rem; background: linear-gradient(135deg, #B8985F, #9d7d4b); color: white; border-radius: 8px; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(184, 152, 95, 0.2);">
                         <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             style="margin-right: 1rem;">

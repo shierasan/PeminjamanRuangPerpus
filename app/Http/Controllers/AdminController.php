@@ -49,7 +49,17 @@ class AdminController extends Controller
         // Mark as read
         $notification->update(['is_read' => true]);
 
-        // Redirect to bookings index
+        // Prioritize booking_id - redirect directly to booking detail
+        if ($notification->booking_id) {
+            return redirect()->route('admin.bookings.show', $notification->booking_id);
+        }
+
+        // Use link field if available (for aspirations, etc)
+        if ($notification->link) {
+            return redirect($notification->link);
+        }
+
+        // Fallback to bookings index
         return redirect()->route('admin.bookings.index');
     }
 }

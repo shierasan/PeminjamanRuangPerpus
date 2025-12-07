@@ -54,7 +54,7 @@
                     </a>
 
                     <!-- Kirim Saran & Aspirasi -->
-                    <a href="#"
+                    <a href="{{ route('user.aspirations.form') }}"
                         style="background: linear-gradient(135deg, #B8985F, #9d7d4b); color: white; padding: 1rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center; transition: all 0.3s; display: block;"
                         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(184, 152, 95, 0.3)'"
                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">

@@ -11,7 +11,25 @@ class AdminRoomController extends Controller
     public function index()
     {
         $rooms = Room::orderBy('name')->paginate(4);  // 4 rooms per page
-        return view('admin.rooms.index', compact('rooms'));
+
+        // Get total rooms count
+        $totalRooms = Room::count();
+
+        // Get bookings for calendar - group by date with unique room count
+        $allBookings = \App\Models\Booking::whereIn('status', ['approved', 'pending'])
+            ->get()
+            ->groupBy(function ($booking) {
+                return $booking->booking_date->format('Y-m-d');
+            })
+            ->map(function ($bookings) {
+                return [
+                    'count' => $bookings->count(),
+                    'rooms_booked' => $bookings->unique('room_id')->count(),
+                    'approved_count' => $bookings->where('status', 'approved')->count()
+                ];
+            });
+
+        return view('admin.rooms.index', compact('rooms', 'allBookings', 'totalRooms'));
     }
 
     public function create()
@@ -47,7 +65,20 @@ class AdminRoomController extends Controller
 
     public function edit(Room $room)
     {
-        return view('admin.rooms.edit', compact('room'));
+        // Get bookings for this room to show in calendar
+        $bookings = \App\Models\Booking::where('room_id', $room->id)
+            ->whereIn('status', ['approved', 'pending'])
+            ->get()
+            ->map(function ($booking) {
+                return [
+                    'booking_date' => $booking->booking_date->format('Y-m-d'),
+                    'status' => $booking->status,
+                    'start_time' => $booking->start_time,
+                    'end_time' => $booking->end_time,
+                ];
+            });
+
+        return view('admin.rooms.edit', compact('room', 'bookings'));
     }
 
     public function update(Request $request, Room $room)

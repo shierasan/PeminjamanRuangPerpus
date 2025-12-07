@@ -34,6 +34,14 @@
                     </div>
                 @endif
 
+                {{-- Display Session Error (time conflict, weekend) --}}
+                @if(session('error'))
+                    <div
+                        style="background: #fee2e2; border: 1px solid #fca5a5; color: #dc2626; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+                        <strong>Error:</strong> {{ session('error') }}
+                    </div>
+                @endif
+
                 <!-- Tanggal yang dipilih -->
                 <div style="margin-bottom: 2rem;">
                     <h3 style="font-weight: 700; margin-bottom: 1rem; color: #1a1a1a;">Tanggal yang dipilih</h3>
@@ -193,9 +201,9 @@
                 const parent = this.closest('div[onclick]');
                 const fileName = this.files[0].name;
                 const fileSize = (this.files[0].size / 1024 / 1024).toFixed(2); // MB
-                
+
                 // Update the display text, but keep the input
-                parent.querySelector('div[style*="font-size: 0.875rem"]').innerHTML = 
+                parent.querySelector('div[style*="font-size: 0.875rem"]').innerHTML =
                     `<strong style="color: #10b981;">✓ ${fileName}</strong> (${fileSize} MB)`;
             }
         });
@@ -205,9 +213,9 @@
                 const parent = this.closest('div[onclick]');
                 const fileName = this.files[0].name;
                 const fileSize = (this.files[0].size / 1024 / 1024).toFixed(2); // MB
-                
+
                 // Update the display text, but keep the input
-                parent.querySelector('div[style*="font-size: 0.875rem"]').innerHTML = 
+                parent.querySelector('div[style*="font-size: 0.875rem"]').innerHTML =
                     `<strong style="color: #10b981;">✓ ${fileName}</strong> (${fileSize} MB)`;
             }
         });

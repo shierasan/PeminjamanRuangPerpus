@@ -77,7 +77,8 @@
                                     </div>
                                     <h3
                                         style="font-size: 1.25rem; font-weight: 700; color: var(--color-dark); margin-bottom: 0.5rem;">
-                                        {{ $room->name }}</h3>
+                                        {{ $room->name }}
+                                    </h3>
                                     <p
                                         style="color: var(--color-text); font-size: 0.875rem; margin-bottom: 1rem; line-height: 1.6;">
                                         {{ $room->description ? Str::limit($room->description, 100) : 'Ruang bersahabat besar yang cocok digunakan untuk kegiatan seperti...' }}
@@ -210,7 +211,8 @@
                                     </div>
                                     <div style="flex: 1; min-width: 0;">
                                         <div style="font-weight: 600; color: var(--color-dark); margin-bottom: 0.25rem;">
-                                            {{ $room->name }}</div>
+                                            {{ $room->name }}
+                                        </div>
                                         <div
                                             style="font-size: 0.75rem; color: var(--color-text-light); display: flex; align-items: center; gap: 0.25rem;">
                                             <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
@@ -237,8 +239,26 @@
 
 @section('scripts')
     <script>
-        // Simple calendar implementation
+        // Calendar with real booking data
         let currentDate = new Date();
+        const allBookings = @json($allBookings);
+        const totalRooms = {{ $totalRooms }};
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        function isSunday(year, month, day) {
+            const date = new Date(year, month, day);
+            return date.getDay() === 0;
+        }
+
+        function isPastDate(year, month, day) {
+            const date = new Date(year, month, day);
+            return date < today;
+        }
+
+        function getBookingInfo(dateStr) {
+            return allBookings[dateStr] || { count: 0, approved_count: 0, rooms_booked: 0 };
+        }
 
         function renderCalendar() {
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -253,9 +273,10 @@
             let calendarHTML = '';
 
             // Day headers
-            const dayHeaders = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            dayHeaders.forEach(day => {
-                calendarHTML += `<div style="font-weight: 600; font-size: 0.75rem; color: var(--color-text-light); padding: 0.5rem 0;">${day}</div>`;
+            const dayHeaders = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+            dayHeaders.forEach((day, index) => {
+                const color = index === 6 ? '#EF4444' : 'var(--color-text-light)';
+                calendarHTML += `<div style="font-weight: 600; font-size: 0.75rem; color: ${color}; padding: 0.5rem 0;">${day}</div>`;
             });
 
             // Empty cells before first day
@@ -265,27 +286,37 @@
             }
 
             // Days
-            const today = new Date();
             for (let day = 1; day <= daysInMonth; day++) {
-                const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-                const randomStatus = Math.random();
-                let bgColor = 'transparent';
-                let textColor = 'var(--color-text)';
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isCurrentDay = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+                const bookingInfo = getBookingInfo(dateStr);
 
-                if (day >= today.getDate() && month === today.getMonth()) {
-                    if (randomStatus > 0.7) {
-                        bgColor = 'var(--color-success)';
-                        textColor = 'white';
-                    } else if (randomStatus > 0.4) {
-                        bgColor = 'var(--color-warning)';
-                        textColor = 'white';
-                    } else {
-                        bgColor = '#EF4444';
-                        textColor = 'white';
-                    }
+                let bgColor = 'var(--color-success)'; // Default: Green (available)
+                let textColor = 'white';
+
+                // Past dates - grey
+                if (isPastDate(year, month, day)) {
+                    bgColor = '#e5e7eb';
+                    textColor = '#9ca3af';
                 }
+                // Sunday - red (closed)
+                else if (isSunday(year, month, day)) {
+                    bgColor = '#EF4444';
+                    textColor = 'white';
+                }
+                // All rooms booked - red (if rooms_booked >= totalRooms)
+                else if (bookingInfo.rooms_booked >= totalRooms && totalRooms > 0) {
+                    bgColor = '#EF4444';
+                    textColor = 'white';
+                }
+                // Some rooms have bookings - yellow
+                else if (bookingInfo.rooms_booked > 0) {
+                    bgColor = 'var(--color-warning)';
+                    textColor = 'white';
+                }
+                // Available - green (default)
 
-                calendarHTML += `<div style="padding: 0.5rem; font-size: 0.875rem; ${isToday ? 'font-weight: 700; border: 2px solid var(--color-primary);' : ''} background-color: ${bgColor}; color: ${textColor}; border-radius: 0.25rem;">${day}</div>`;
+                calendarHTML += `<div style="padding: 0.5rem; font-size: 0.875rem; ${isCurrentDay ? 'font-weight: 700; border: 2px solid var(--color-primary);' : ''} background-color: ${bgColor}; color: ${textColor}; border-radius: 0.25rem;">${day}</div>`;
             }
 
             document.getElementById('calendarGrid').innerHTML = calendarHTML;

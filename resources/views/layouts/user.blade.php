@@ -86,10 +86,11 @@
                                 </svg>
                             </a>
                             <div class="dropdown-menu">
-                                <a href="#" class="dropdown-item">Syarat & Ketentuan</a>
-                                <a href="#" class="dropdown-item">Alur Peminjaman</a>
-                                <a href="#" class="dropdown-item">Pengumuman</a>
-                                <a href="#" class="dropdown-item">Kontak dan Layanan</a>
+                                <a href="{{ route('user.terms.index') }}" class="dropdown-item">Syarat & Ketentuan</a>
+                                <a href="{{ route('public.booking-flow') }}" class="dropdown-item">Alur Peminjaman</a>
+                                <a href="{{ route('user.announcements.index') }}" class="dropdown-item">Pengumuman</a>
+                                <a href="{{ route('user.contacts.index') }}" class="dropdown-item">Kontak dan
+                                    Layanan</a>
                             </div>
                         </li>
                         <li class="nav-item">

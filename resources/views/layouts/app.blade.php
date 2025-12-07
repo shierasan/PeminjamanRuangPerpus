@@ -47,6 +47,8 @@
                                     Peminjaman</a>
                                 <a href="{{ route('admin.cancellations.index') }}" class="dropdown-item">Daftar
                                     Pembatalan</a>
+                                <a href="{{ route('admin.closures.index') }}" class="dropdown-item">Penutupan
+                                    Ruangan</a>
                             </div>
                         </li>
 
@@ -61,10 +63,12 @@
                                 </svg>
                             </a>
                             <div class="dropdown-menu">
-                                <a href="#syarat" class="dropdown-item">Syarat & Ketentuan</a>
-                                <a href="#alur" class="dropdown-item">Alur Peminjaman</a>
+                                <a href="{{ route('admin.terms.index') }}" class="dropdown-item">Syarat & Ketentuan</a>
+                                <a href="{{ route('admin.booking-flow.index') }}" class="dropdown-item">Alur
+                                    Peminjaman</a>
                                 <a href="{{ route('admin.announcements.index') }}" class="dropdown-item">Pengumuman</a>
-                                <a href="#kontak" class="dropdown-item">Kontak dan Layanan</a>
+                                <a href="{{ route('admin.contacts.index') }}" class="dropdown-item">Kontak dan
+                                    Layanan</a>
                             </div>
                         </li>
 

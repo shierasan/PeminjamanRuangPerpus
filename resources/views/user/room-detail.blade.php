@@ -73,7 +73,8 @@
                         <div>
                             <div style="font-weight: 600;">{{ $room->contact_name ?? 'Petugas Perpustakaan' }}</div>
                             <div style="color: #B8985F; font-size: 0.875rem;">
-                                {{ $room->contact_phone ?? '+62 812-3456-7890' }}</div>
+                                {{ $room->contact_phone ?? '+62 812-3456-7890' }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -115,14 +116,18 @@
             style="background: white; border-radius: 16px; padding: 2.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                 <h2 style="font-size: 1.5rem; font-weight: 700; margin: 0;">Kalender Booking</h2>
-                <div style="display: flex; gap: 2rem; font-size: 0.875rem;">
+                <div style="display: flex; gap: 1.5rem; font-size: 0.875rem;">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <div style="width: 16px; height: 16px; background: #10b981; border-radius: 4px;"></div>
-                        <span>booked</span>
+                        <span>Tersedia</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <div style="width: 16px; height: 16px; background: #F59E0B; border-radius: 4px;"></div>
-                        <span>diproses</span>
+                        <span>Sebagian Terisi</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 16px; height: 16px; background: #EF4444; border-radius: 4px;"></div>
+                        <span>Libur/Penuh</span>
                     </div>
                 </div>
             </div>
@@ -147,6 +152,8 @@
             <div>
                 <h3 style="font-weight: 700; margin-bottom: 0.5rem;">Tanggal yang dipilih</h3>
                 <div id="selectedDateDisplay" style="color: #666; font-size: 1rem;">-</div>
+                <div id="dateWarning" style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem; display: none;">
+                </div>
             </div>
             <a href="{{ route('user.rooms.booking', $room->id) }}" id="bookingButton"
                 style="padding: 1rem 2.5rem; background: linear-gradient(135deg, #B8985F, #9d7d4b); color: white; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
@@ -159,9 +166,49 @@
         let selectedDate = null;
         let currentDate = new Date();
         const bookings = @json($bookings);
+        const closures = @json($closures);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Group bookings by date and count
+        function getBookingsForDate(dateStr) {
+            return bookings.filter(b => b.booking_date === dateStr && b.status === 'approved');
+        }
+
+        function hasAnyBooking(dateStr) {
+            return bookings.some(b => b.booking_date === dateStr && (b.status === 'approved' || b.status === 'pending'));
+        }
+
+        // Check if date is fully booked (assuming 8 hours operational, each booking is max duration)
+        function isFullyBooked(dateStr) {
+            const dayBookings = getBookingsForDate(dateStr);
+            // Simple check: if there are 3+ approved bookings, consider it full
+            // Or you can implement more sophisticated time slot checking
+            return dayBookings.length >= 3;
+        }
+
+        // Check if date is closed
+        function getClosureForDate(dateStr) {
+            return closures.find(c => c.closure_date === dateStr && c.is_whole_day);
+        }
+
+        function isClosedForDate(dateStr) {
+            return closures.some(c => c.closure_date === dateStr && c.is_whole_day);
+        }
+
+        function isSunday(year, month, day) {
+            const date = new Date(year, month, day);
+            const dayOfWeek = date.getDay();
+            return dayOfWeek === 0; // 0 = Sunday only
+        }
+
+        function isPastDate(year, month, day) {
+            const date = new Date(year, month, day);
+            return date < today;
+        }
 
         function renderCalendar() {
-            const monthNames = ["November", "December", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October"];
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
 
@@ -172,8 +219,9 @@
 
             let html = '<table style="width: 100%; border-collapse: collapse;">';
             html += '<thead><tr>';
-            ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(day => {
-                html += `<th style="padding: 1rem; text-align: center; font-weight: 600; color: #666;">${day}</th>`;
+            ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].forEach((day, index) => {
+                const color = index === 6 ? '#EF4444' : '#666'; // Only Sunday is red
+                html += `<th style="padding: 1rem; text-align: center; font-weight: 600; color: ${color};">${day}</th>`;
             });
             html += '</tr></thead><tbody><tr>';
 
@@ -184,21 +232,46 @@
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const booking = bookings.find(b => b.booking_date === dateStr);
-                let bgColor = 'white';
-                let textColor = '#1a1a1a';
+                let bgColor = '#10b981'; // Default: Green (available weekday)
+                let textColor = 'white';
+                let cursor = 'pointer';
+                let isClickable = true;
 
-                if (booking) {
-                    if (booking.status === 'approved') {
-                        bgColor = '#10b981';
-                        textColor = 'white';
-                    } else if (booking.status === 'pending') {
-                        bgColor = '#F59E0B';
-                        textColor = 'white';
-                    }
+                // Check if it's a past date
+                if (isPastDate(year, month, day)) {
+                    bgColor = '#e5e7eb';
+                    textColor = '#9ca3af';
+                    cursor = 'not-allowed';
+                    isClickable = false;
                 }
+                // Check if Sunday (only Sunday is blocked)
+                else if (isSunday(year, month, day)) {
+                    bgColor = '#EF4444'; // Red
+                    textColor = 'white';
+                    cursor = 'not-allowed';
+                    isClickable = false;
+                }
+                // Check if room is closed for this date
+                else if (isClosedForDate(dateStr)) {
+                    bgColor = '#991b1b'; // Dark red for closures
+                    textColor = 'white';
+                    cursor = 'not-allowed';
+                    isClickable = false;
+                }
+                // Check if fully booked
+                else if (isFullyBooked(dateStr)) {
+                    bgColor = '#EF4444'; // Red
+                    textColor = 'white';
+                }
+                // Check if has any approved booking (partial - show yellow)
+                else if (hasAnyBooking(dateStr)) {
+                    bgColor = '#F59E0B'; // Yellow
+                    textColor = 'white';
+                }
+                // Otherwise green (available)
 
-                html += `<td onclick="selectDate('${dateStr}')" style="padding: 1rem; text-align: center; cursor: pointer; background: ${bgColor}; color: ${textColor}; border: 1px solid #f0f0f0;">${day}</td>`;
+                const onclick = isClickable ? `onclick="selectDate('${dateStr}')"` : '';
+                html += `<td ${onclick} style="padding: 1rem; text-align: center; cursor: ${cursor}; background: ${bgColor}; color: ${textColor}; border: 1px solid #f0f0f0; border-radius: 4px;">${day}</td>`;
 
                 if ((startDay + day) % 7 === 0) html += '</tr><tr>';
             }
@@ -208,15 +281,51 @@
         }
 
         function selectDate(dateStr) {
+            const date = new Date(dateStr);
+            const dayOfWeek = date.getDay();
+            const warning = document.getElementById('dateWarning');
+            const bookingButton = document.getElementById('bookingButton');
+
+            // Check if Sunday (only Sunday is blocked)
+            if (dayOfWeek === 0) {
+                warning.textContent = 'Tidak dapat meminjam ruangan di hari Minggu';
+                warning.style.display = 'block';
+                bookingButton.style.pointerEvents = 'none';
+                bookingButton.style.opacity = '0.5';
+                return;
+            }
+
+            // Check if room is closed
+            const closure = getClosureForDate(dateStr);
+            if (closure) {
+                warning.textContent = 'Ruangan tutup: ' + closure.reason;
+                warning.style.display = 'block';
+                bookingButton.style.pointerEvents = 'none';
+                bookingButton.style.opacity = '0.5';
+                return;
+            }
+
+            // Check if fully booked
+            if (isFullyBooked(dateStr)) {
+                warning.textContent = 'Tanggal ini sudah penuh';
+                warning.style.display = 'block';
+                bookingButton.style.pointerEvents = 'none';
+                bookingButton.style.opacity = '0.5';
+                return;
+            }
+
             selectedDate = dateStr;
-            document.getElementById('selectedDateDisplay').textContent = new Date(dateStr).toLocaleDateString('id-ID', {
+            warning.style.display = 'none';
+            bookingButton.style.pointerEvents = 'auto';
+            bookingButton.style.opacity = '1';
+
+            document.getElementById('selectedDateDisplay').textContent = date.toLocaleDateString('id-ID', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
             });
 
-            const bookingButton = document.getElementById('bookingButton');
             bookingButton.href = "{{ route('user.rooms.booking', $room->id) }}?date=" + dateStr;
         }
 

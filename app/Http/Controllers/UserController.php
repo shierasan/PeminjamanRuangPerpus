@@ -40,7 +40,41 @@ class UserController extends Controller
             ->limit(3)
             ->get();
 
-        return view('user.rooms', compact('rooms', 'popularRooms'));
+        // Get total rooms count
+        $totalRooms = \App\Models\Room::count();
+
+        // Get bookings for calendar - group by date with unique room count
+        $allBookings = \App\Models\Booking::whereIn('status', ['approved', 'pending'])
+            ->get()
+            ->groupBy(function ($booking) {
+                return $booking->booking_date->format('Y-m-d');
+            })
+            ->map(function ($bookings) {
+                return [
+                    'count' => $bookings->count(),
+                    'rooms_booked' => $bookings->unique('room_id')->count(),
+                    'approved_count' => $bookings->where('status', 'approved')->count()
+                ];
+            });
+
+        // Get closures for calendar
+        $allClosures = \App\Models\RoomClosure::where('closure_date', '>=', now()->toDateString())
+            ->get()
+            ->groupBy(function ($closure) {
+                return $closure->closure_date->format('Y-m-d');
+            })
+            ->map(function ($closures) {
+                $allRoomsClosed = $closures->contains(function ($c) {
+                    return is_null($c->room_id) && is_null($c->start_time) && is_null($c->end_time);
+                });
+                return [
+                    'all_rooms_closed' => $allRoomsClosed,
+                    'has_closures' => $closures->count() > 0,
+                    'count' => $closures->count()
+                ];
+            });
+
+        return view('user.rooms', compact('rooms', 'popularRooms', 'allBookings', 'totalRooms', 'allClosures'));
     }
 
     public function roomDetail($id)
@@ -50,9 +84,31 @@ class UserController extends Controller
         // Get bookings for this room to show in calendar
         $bookings = \App\Models\Booking::where('room_id', $id)
             ->whereIn('status', ['approved', 'pending'])
-            ->get();
+            ->get()
+            ->map(function ($booking) {
+                return [
+                    'booking_date' => $booking->booking_date->format('Y-m-d'),
+                    'status' => $booking->status,
+                    'start_time' => $booking->start_time,
+                    'end_time' => $booking->end_time,
+                ];
+            });
 
-        return view('user.room-detail', compact('room', 'bookings'));
+        // Get closures for this room
+        $closures = \App\Models\RoomClosure::forRoom($id)
+            ->where('closure_date', '>=', now()->toDateString())
+            ->get()
+            ->map(function ($closure) {
+                return [
+                    'closure_date' => $closure->closure_date->format('Y-m-d'),
+                    'start_time' => $closure->start_time,
+                    'end_time' => $closure->end_time,
+                    'reason' => $closure->reason,
+                    'is_whole_day' => $closure->isWholeDay(),
+                ];
+            });
+
+        return view('user.room-detail', compact('room', 'bookings', 'closures'));
     }
 
     public function createBooking($id)
@@ -81,6 +137,64 @@ class UserController extends Controller
             'letter_file' => 'nullable|file|mimes:pdf,jpg,png|max:2048',
             'rundown_file' => 'nullable|file|mimes:pdf,jpg,png|max:2048',
         ]);
+
+        // Check if booking date is Sunday (only Sunday is blocked)
+        $bookingDate = \Carbon\Carbon::parse($validated['booking_date']);
+        if ($bookingDate->isSunday()) {
+            return redirect()->back()->withInput()->with('error', 'Tidak dapat meminjam ruangan di hari Minggu.');
+        }
+
+        // Check for room closure
+        $closureDate = $bookingDate->format('Y-m-d');
+
+        // Get all closures for this room (including all-room closures) on this date
+        $closures = \App\Models\RoomClosure::where(function ($q) use ($validated) {
+            $q->whereNull('room_id') // all rooms closed
+                ->orWhere('room_id', $validated['room_id']);
+        })
+            ->whereDate('closure_date', $closureDate)
+            ->get();
+
+        foreach ($closures as $closure) {
+            // If whole day closure (no start/end time), block completely
+            if (is_null($closure->start_time) && is_null($closure->end_time)) {
+                $roomName = $closure->room_id ? $closure->room->name : 'Semua Ruangan';
+                return redirect()->back()->withInput()->with('error', 'Ruangan tidak tersedia pada tanggal ini (' . $roomName . '): ' . $closure->reason);
+            }
+
+            // If time-specific closure, check for overlap
+            if ($closure->start_time && $closure->end_time) {
+                $bookingStart = $validated['start_time'];
+                $bookingEnd = $validated['end_time'];
+
+                // Check if booking time overlaps with closure time
+                if ($bookingStart < $closure->end_time && $bookingEnd > $closure->start_time) {
+                    $roomName = $closure->room_id ? $closure->room->name : 'Semua Ruangan';
+                    return redirect()->back()->withInput()->with('error', 'Ruangan tidak tersedia pada waktu tersebut (' . $roomName . '): ' . $closure->reason);
+                }
+            }
+        }
+
+        // Check for time conflict with approved bookings
+        $conflictingBooking = \App\Models\Booking::where('room_id', $validated['room_id'])
+            ->where('booking_date', $validated['booking_date'])
+            ->where('status', 'approved')
+            ->where(function ($query) use ($validated) {
+                // Check if time slots overlap
+                $query->where(function ($q) use ($validated) {
+                    $q->where('start_time', '<', $validated['end_time'])
+                        ->where('end_time', '>', $validated['start_time']);
+                });
+            })
+            ->first();
+
+        if ($conflictingBooking) {
+            return redirect()->back()->withInput()->with(
+                'error',
+                'Waktu yang dipilih bertabrakan dengan peminjaman yang sudah disetujui pada jam ' .
+                $conflictingBooking->start_time . ' - ' . $conflictingBooking->end_time . '. Silakan pilih waktu lain.'
+            );
+        }
 
         // Handle file uploads
         if ($request->hasFile('letter_file')) {
@@ -118,7 +232,7 @@ class UserController extends Controller
             'type' => 'booking_submitted',
             'title' => 'Permohonan peminjaman berhasil diajukan',
             'message' => 'Peminjaman ruangan ' . $room->name . ' pada ' . date('d M Y', strtotime($booking->booking_date)) . ' berhasil diajukan.',
-            'link' => route('user.rooms'),
+            'link' => route('user.bookings.detail', $booking->id),
         ]);
 
         // Create notification for all admins
@@ -130,7 +244,7 @@ class UserController extends Controller
                 'type' => 'new_booking',
                 'title' => auth()->user()->name . ' baru saja mengajukan peminjaman ruangan',
                 'message' => 'Peminjaman ruangan ' . $room->name . ' menunggu persetujuan.',
-                'link' => route('admin.bookings.index'),
+                'link' => route('admin.bookings.show', $booking->id),
             ]);
         }
 
@@ -175,12 +289,38 @@ class UserController extends Controller
         // Mark as read
         $notification->update(['is_read' => true]);
 
-        // Redirect to history page
+        // Prioritize booking_id - redirect directly to booking detail
+        if ($notification->booking_id) {
+            return redirect()->route('user.bookings.detail', $notification->booking_id);
+        }
+
+        // Use link field if available (for announcements, aspirations, etc)
+        if ($notification->link) {
+            return redirect($notification->link);
+        }
+
+        // Fallback to history page
         return redirect()->route('user.history');
     }
 
     public function profile()
     {
         return view('user.profile');
+    }
+
+    public function announcements()
+    {
+        $announcements = Announcement::where('is_active', true)
+            ->orderBy('published_date', 'desc')
+            ->paginate(10);
+
+        return view('user.announcements.index', compact('announcements'));
+    }
+
+    public function announcementDetail($id)
+    {
+        $announcement = Announcement::findOrFail($id);
+
+        return view('user.announcements.show', compact('announcement'));
     }
 }

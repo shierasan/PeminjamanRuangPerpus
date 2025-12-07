@@ -39,10 +39,10 @@
                                 </svg>
                             </a>
                             <div class="dropdown-menu">
-                                <a href="#syarat" class="dropdown-item">Syarat & Ketentuan</a>
+                                <a href="{{ route('public.terms') }}" class="dropdown-item">Syarat & Ketentuan</a>
                                 <a href="#alur" class="dropdown-item">Alur Peminjaman</a>
                                 <a href="#pengumuman" class="dropdown-item">Pengumuman</a>
-                                <a href="#kontak" class="dropdown-item">Kontak dan Layanan</a>
+                                <a href="{{ route('public.contacts') }}" class="dropdown-item">Kontak dan Layanan</a>
                             </div>
                         </li>
                         <li class="nav-item" style="margin-left: auto;">
@@ -98,50 +98,26 @@
             </p>
 
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
-                <!-- Card 1 -->
-                <div style="background: #FFF9E6; padding: 2rem; border-radius: 12px; border: 1px solid #E6D5A8;">
-                    <div style="font-size: 0.875rem; color: #B8985F; margin-bottom: 1rem;">17 Nov 2025</div>
-                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #1a1a1a;">
-                        Maintenance Sistem
-                    </h3>
-                    <p style="color: #666; line-height: 1.6; margin-bottom: 1.5rem;">
-                        Sistem akan dalam perbaikan pada Sabtu, 23 November 2025 pukul 18.00-21.00. Selama periode ini
-                        layanan tidak dapat diakses.
-                    </p>
-                    <a href="#" style="color: #B8985F; font-weight: 600; text-decoration: none;">
-                        Baca selengkapnya »
-                    </a>
-                </div>
-
-                <!-- Card 2 -->
-                <div style="background: #FFF9E6; padding: 2rem; border-radius: 12px; border: 1px solid #E6D5A8;">
-                    <div style="font-size: 0.875rem; color: #B8985F; margin-bottom: 1rem;">17 Nov 2025</div>
-                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #1a1a1a;">
-                        Penutupan Sementara Migas Corner
-                    </h3>
-                    <p style="color: #666; line-height: 1.6; margin-bottom: 1.5rem;">
-                        Ruang Migas Corner tutup hingga 27 November 2025. Peminjaman akan dibuka kembali setelah
-                        perbaikan selesai.
-                    </p>
-                    <a href="#" style="color: #B8985F; font-weight: 600; text-decoration: none;">
-                        Baca selengkapnya »
-                    </a>
-                </div>
-
-                <!-- Card 3 -->
-                <div style="background: #FFF9E6; padding: 2rem; border-radius: 12px; border: 1px solid #E6D5A8;">
-                    <div style="font-size: 0.875rem; color: #B8985F; margin-bottom: 1rem;">17 Nov 2025</div>
-                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #1a1a1a;">
-                        Aturan Baru Upload Surat Permohonan
-                    </h3>
-                    <p style="color: #666; line-height: 1.6; margin-bottom: 1.5rem;">
-                        Mulai 1 Desember 2025, setiap peminjaman wajib melampirkan surat permohonan resmi dalam format
-                        PDF sesuai ketentuan terbaru perpustakaan.
-                    </p>
-                    <a href="#" style="color: #B8985F; font-weight: 600; text-decoration: none;">
-                        Baca selengkapnya »
-                    </a>
-                </div>
+                @forelse($announcements as $announcement)
+                    <div style="background: #FFF9E6; padding: 2rem; border-radius: 12px; border: 1px solid #E6D5A8;">
+                        <div style="font-size: 0.875rem; color: #B8985F; margin-bottom: 1rem;">
+                            {{ $announcement->published_date->format('d M Y') }}
+                        </div>
+                        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #1a1a1a;">
+                            {{ $announcement->title }}
+                        </h3>
+                        <p style="color: #666; line-height: 1.6; margin-bottom: 1.5rem;">
+                            {{ Str::limit($announcement->content, 120) }}
+                        </p>
+                        <a href="{{ route('login') }}" style="color: #B8985F; font-weight: 600; text-decoration: none;">
+                            Baca selengkapnya »
+                        </a>
+                    </div>
+                @empty
+                    <div style="grid-column: span 3; text-align: center; padding: 3rem; color: #666;">
+                        <p>Belum ada pengumuman terbaru.</p>
+                    </div>
+                @endforelse
             </div>
         </div>
     </section>

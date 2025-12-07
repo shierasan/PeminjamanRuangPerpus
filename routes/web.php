@@ -9,11 +9,23 @@ use App\Http\Controllers\AdminBookingController;
 use App\Http\Controllers\AdminAnnouncementController;
 use App\Http\Controllers\AdminCancellationController;
 use App\Http\Controllers\AdminHistoryController;
+use App\Http\Controllers\AdminRoomClosureController;
+use App\Http\Controllers\AspirationController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\TermController;
 
 // Root - Landing Page
 Route::get('/', function () {
-    return view('landing');
+    $announcements = \App\Models\Announcement::where('is_active', true)
+        ->orderBy('published_date', 'desc')
+        ->limit(3)
+        ->get();
+    return view('landing', compact('announcements'));
 })->name('home');
+
+// Public Information Routes (accessible without login)
+Route::get('/contacts', [ContactController::class, 'publicIndex'])->name('public.contacts');
+Route::get('/terms', [TermController::class, 'publicIndex'])->name('public.terms');
 
 // Authentication Routes (Admin Only)
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -37,6 +49,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Room Management
     Route::resource('rooms', AdminRoomController::class);
 
+    // Room Closure Management
+    Route::get('/closures', [AdminRoomClosureController::class, 'index'])->name('closures.index');
+    Route::get('/closures/create', [AdminRoomClosureController::class, 'create'])->name('closures.create');
+    Route::post('/closures', [AdminRoomClosureController::class, 'store'])->name('closures.store');
+    Route::delete('/closures/{closure}', [AdminRoomClosureController::class, 'destroy'])->name('closures.destroy');
+
     // Booking Management
     Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{booking}', [AdminBookingController::class, 'show'])->name('bookings.show');
@@ -54,7 +72,36 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // History Management  
     Route::get('/history', [AdminHistoryController::class, 'index'])->name('history.index');
     Route::delete('/history/{id}', [AdminHistoryController::class, 'destroy'])->name('history.destroy');
+
+    // Aspiration Management
+    Route::get('/aspirations', [AspirationController::class, 'index'])->name('aspirations.index');
+    Route::get('/aspirations/{id}', [AspirationController::class, 'show'])->name('aspirations.show');
+    Route::delete('/aspirations/{id}', [AspirationController::class, 'destroy'])->name('aspirations.destroy');
+
+    // Contact Management
+    Route::get('/contacts', [ContactController::class, 'adminIndex'])->name('contacts.index');
+    Route::get('/contacts/edit', [ContactController::class, 'edit'])->name('contacts.edit');
+    Route::put('/contacts', [ContactController::class, 'update'])->name('contacts.update');
+
+    // Terms Management
+    Route::get('/terms', [TermController::class, 'adminIndex'])->name('terms.index');
+    Route::get('/terms/edit', [TermController::class, 'edit'])->name('terms.edit');
+    Route::post('/terms', [TermController::class, 'store'])->name('terms.store');
+    Route::put('/terms', [TermController::class, 'update'])->name('terms.update');
+    Route::delete('/terms/{id}', [TermController::class, 'destroy'])->name('terms.destroy');
+    Route::post('/terms/upload-document', [TermController::class, 'uploadDocument'])->name('terms.uploadDocument');
+
+    // Booking Flow Management
+    Route::get('/booking-flow', [\App\Http\Controllers\BookingFlowController::class, 'adminIndex'])->name('booking-flow.index');
+    Route::put('/booking-flow', [\App\Http\Controllers\BookingFlowController::class, 'update'])->name('booking-flow.update');
+    Route::post('/booking-flow/{id}/upload-image', [\App\Http\Controllers\BookingFlowController::class, 'uploadImage'])->name('booking-flow.uploadImage');
+    Route::delete('/booking-flow/{id}/delete-image', [\App\Http\Controllers\BookingFlowController::class, 'deleteImage'])->name('booking-flow.deleteImage');
 });
+
+// Public Booking Flow Route (accessible without login)
+Route::get('/alur-peminjaman', [\App\Http\Controllers\BookingFlowController::class, 'publicIndex'])->name('public.booking-flow');
+
+
 
 // User Routes (Only accessible by users, not admins)
 Route::middleware(['auth', 'user'])->prefix('user')->name('user.')->group(function () {
@@ -68,4 +115,13 @@ Route::middleware(['auth', 'user'])->prefix('user')->name('user.')->group(functi
     Route::get('/notifications', [App\Http\Controllers\UserController::class, 'notifications'])->name('notifications');
     Route::get('/notifications/{id}/read', [App\Http\Controllers\UserController::class, 'markNotificationAsRead'])->name('notifications.read');
     Route::get('/profile', [App\Http\Controllers\UserController::class, 'profile'])->name('profile');
+    Route::get('/aspirations/form', function () {
+        return view('user.aspiration-form');
+    })->name('aspirations.form');
+    Route::post('/aspirations', [AspirationController::class, 'store'])->name('aspirations.store');
+    Route::get('/aspirations/{id}', [AspirationController::class, 'userShow'])->name('aspirations.show');
+    Route::get('/contacts', [ContactController::class, 'userIndex'])->name('contacts.index');
+    Route::get('/terms', [TermController::class, 'userIndex'])->name('terms.index');
+    Route::get('/announcements', [App\Http\Controllers\UserController::class, 'announcements'])->name('announcements.index');
+    Route::get('/announcements/{id}', [App\Http\Controllers\UserController::class, 'announcementDetail'])->name('announcements.show');
 });

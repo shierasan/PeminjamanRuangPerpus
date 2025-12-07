@@ -139,6 +139,44 @@
                 </div>
             </div>
 
+            {{-- Kalender Peminjaman --}}
+            <div style="margin-bottom: 2rem; padding: 1.5rem; background: #FFF9E6; border-radius: 12px; border: 1px solid #E6D5A8;">
+                <h3 style="font-weight: 700; margin-bottom: 1.5rem; color: #1a1a1a; text-align: center;">
+                    Kalender Peminjaman - {{ $room->name }}
+                </h3>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <button type="button" onclick="previousMonth()"
+                        style="background: none; border: none; cursor: pointer; padding: 0.5rem; font-size: 1.25rem;">
+                        &lt;
+                    </button>
+                    <h4 id="calendarMonth" style="font-weight: 600; font-size: 1rem; margin: 0;"></h4>
+                    <button type="button" onclick="nextMonth()"
+                        style="background: none; border: none; cursor: pointer; padding: 0.5rem; font-size: 1.25rem;">
+                        &gt;
+                    </button>
+                </div>
+
+                <div id="calendarGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; text-align: center;">
+                </div>
+
+                {{-- Legend --}}
+                <div style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 1.5rem; font-size: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 16px; height: 16px; background: #10b981; border-radius: 4px;"></div>
+                        <span>Tersedia</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 16px; height: 16px; background: #F59E0B; border-radius: 4px;"></div>
+                        <span>Ada Booking</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 16px; height: 16px; background: #EF4444; border-radius: 4px;"></div>
+                        <span>Libur/Penuh</span>
+                    </div>
+                </div>
+            </div>
+
             {{-- Buttons --}}
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;">
                 <div style="display: flex; gap: 1rem;">
@@ -177,5 +215,107 @@ function deleteImage() {
         document.getElementById('deleteImageFlag').value = '1';
     }
 }
+
+// Calendar implementation
+let currentDate = new Date();
+const bookings = @json($bookings);
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+function isSunday(year, month, day) {
+    const date = new Date(year, month, day);
+    return date.getDay() === 0;
+}
+
+function isPastDate(year, month, day) {
+    const date = new Date(year, month, day);
+    return date < today;
+}
+
+function hasAnyBooking(dateStr) {
+    return bookings.some(b => b.booking_date === dateStr);
+}
+
+function getBookingsForDate(dateStr) {
+    return bookings.filter(b => b.booking_date === dateStr && b.status === 'approved');
+}
+
+function isFullyBooked(dateStr) {
+    return getBookingsForDate(dateStr).length >= 3;
+}
+
+function renderCalendar() {
+    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    document.getElementById('calendarMonth').textContent = monthNames[month] + ' ' + year;
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    let calendarHTML = '';
+
+    // Day headers
+    const dayHeaders = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+    dayHeaders.forEach((day, index) => {
+        const color = index === 6 ? '#EF4444' : '#666';
+        calendarHTML += `<div style="font-weight: 600; font-size: 0.75rem; color: ${color}; padding: 0.5rem 0;">${day}</div>`;
+    });
+
+    // Empty cells before first day
+    const startDay = firstDay === 0 ? 6 : firstDay - 1;
+    for (let i = 0; i < startDay; i++) {
+        calendarHTML += '<div style="padding: 0.5rem;"></div>';
+    }
+
+    // Days
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isCurrentDay = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+        
+        let bgColor = '#10b981'; // Default: Green (available)
+        let textColor = 'white';
+
+        // Past dates - grey
+        if (isPastDate(year, month, day)) {
+            bgColor = '#e5e7eb';
+            textColor = '#9ca3af';
+        }
+        // Sunday - red (closed)
+        else if (isSunday(year, month, day)) {
+            bgColor = '#EF4444';
+            textColor = 'white';
+        }
+        // Fully booked (3+ approved) - red
+        else if (isFullyBooked(dateStr)) {
+            bgColor = '#EF4444';
+            textColor = 'white';
+        }
+        // Has some bookings - yellow
+        else if (hasAnyBooking(dateStr)) {
+            bgColor = '#F59E0B';
+            textColor = 'white';
+        }
+        // Available - green (default)
+
+        calendarHTML += `<div style="padding: 0.5rem; font-size: 0.875rem; ${isCurrentDay ? 'font-weight: 700; border: 2px solid #B8985F;' : ''} background-color: ${bgColor}; color: ${textColor}; border-radius: 0.25rem;">${day}</div>`;
+    }
+
+    document.getElementById('calendarGrid').innerHTML = calendarHTML;
+}
+
+function previousMonth() {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+}
+
+function nextMonth() {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+}
+
+// Initialize calendar
+renderCalendar();
 </script>
 @endsection
