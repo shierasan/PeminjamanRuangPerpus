@@ -57,11 +57,11 @@
                                 Edit »
                             </a>
                             <form action="{{ route('admin.announcements.destroy', $announcement->id) }}" method="POST"
-                                style="display: inline;"
-                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengumuman ini?')">
+                                style="display: inline;" id="delete-form-{{ $announcement->id }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit"
+                                <button type="button"
+                                    onclick="handleDelete({{ $announcement->id }}, '{{ $announcement->title }}')"
                                     style="background: none; border: none; color: #ef4444; font-size: 0.9rem; font-weight: 500; cursor: pointer; padding: 0;">
                                     Hapus
                                 </button>
@@ -110,5 +110,13 @@
                 searchAnnouncements();
             }
         });
+
+        // Handle delete with custom modal
+        async function handleDelete(id, title) {
+            const confirmed = await confirmDelete('pengumuman "' + title + '"');
+            if (confirmed) {
+                document.getElementById('delete-form-' + id).submit();
+            }
+        }
     </script>
 @endsection

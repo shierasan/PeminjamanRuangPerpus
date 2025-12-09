@@ -74,11 +74,29 @@ class AdminController extends Controller
 
         // Prioritize booking_id - redirect directly to booking detail
         if ($notification->booking_id) {
+            // Check if booking still exists
+            $booking = \App\Models\Booking::find($notification->booking_id);
+            if (!$booking) {
+                return redirect()->route('admin.notifications')
+                    ->with('error', 'Detail peminjaman yang terkait dengan notifikasi ini sudah tidak tersedia atau telah dihapus.');
+            }
             return redirect()->route('admin.bookings.show', $notification->booking_id);
         }
 
         // Use link field if available (for aspirations, etc)
         if ($notification->link) {
+            // Check if it's an aspiration link
+            if (str_contains($notification->link, 'aspirations/')) {
+                preg_match('/aspirations\/(\d+)/', $notification->link, $matches);
+                if (!empty($matches[1])) {
+                    $aspiration = \App\Models\Aspiration::find($matches[1]);
+                    if (!$aspiration) {
+                        return redirect()->route('admin.notifications')
+                            ->with('error', 'Aspirasi yang terkait dengan notifikasi ini sudah tidak tersedia atau telah dihapus.');
+                    }
+                }
+            }
+
             return redirect($notification->link);
         }
 

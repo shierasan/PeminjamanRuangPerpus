@@ -1,0 +1,168 @@
+/* ============================================
+   CUSTOM MODAL STYLES
+   ============================================ */
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal Box */
+.modal-box {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    transform: scale(0.8) translateY(20px);
+    transition: all 0.3s ease;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-overlay.active .modal-box {
+    transform: scale(1) translateY(0);
+}
+
+/* Modal Icon */
+.modal-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.modal-icon.warning {
+    background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+}
+
+.modal-icon.danger {
+    background: linear-gradient(135deg, #FEE2E2, #FECACA);
+}
+
+.modal-icon.success {
+    background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+}
+
+.modal-icon.info {
+    background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+}
+
+.modal-icon svg {
+    width: 40px;
+    height: 40px;
+}
+
+.modal-icon.warning svg {
+    color: #F59E0B;
+}
+
+.modal-icon.danger svg {
+    color: #EF4444;
+}
+
+.modal-icon.success svg {
+    color: #10B981;
+}
+
+.modal-icon.info svg {
+    color: #3B82F6;
+}
+
+/* Modal Title */
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin-bottom: 0.75rem;
+}
+
+/* Modal Message */
+.modal-message {
+    color: #6B7280;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+/* Modal Buttons */
+.modal-buttons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.modal-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    min-width: 100px;
+}
+
+.modal-btn:hover {
+    transform: translateY(-2px);
+}
+
+.modal-btn.cancel {
+    background: #F3F4F6;
+    color: #4B5563;
+}
+
+.modal-btn.cancel:hover {
+    background: #E5E7EB;
+}
+
+.modal-btn.confirm {
+    background: linear-gradient(135deg, #B8985F, #9d7d4b);
+    color: white;
+    box-shadow: 0 4px 14px rgba(184, 152, 95, 0.4);
+}
+
+.modal-btn.confirm:hover {
+    box-shadow: 0 6px 20px rgba(184, 152, 95, 0.5);
+}
+
+.modal-btn.danger {
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+    color: white;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+}
+
+.modal-btn.danger:hover {
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+}
+
+.modal-btn.success {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: white;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+}
+
+.modal-btn.success:hover {
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+}

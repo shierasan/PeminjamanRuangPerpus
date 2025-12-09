@@ -72,10 +72,10 @@
                                     </td>
                                     <td style="padding: 1rem; text-align: center;">
                                         <form action="{{ route('admin.closures.destroy', $closure) }}" method="POST"
-                                            onsubmit="return confirm('Hapus penutupan ini?');" style="display: inline;">
+                                            id="delete-closure-{{ $closure->id }}" style="display: inline;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit"
+                                            <button type="button" onclick="handleDeleteClosure({{ $closure->id }})"
                                                 style="background: #fee2e2; color: #dc2626; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">
                                                 Hapus
                                             </button>
@@ -104,4 +104,14 @@
             @endif
         </div>
     </div>
+
+    <script>
+        // Handle delete with custom modal
+        async function handleDeleteClosure(id) {
+            const confirmed = await confirmDelete('penutupan ruangan ini');
+            if (confirmed) {
+                document.getElementById('delete-closure-' + id).submit();
+            }
+        }
+    </script>
 @endsection

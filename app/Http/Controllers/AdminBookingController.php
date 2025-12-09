@@ -27,9 +27,11 @@ class AdminBookingController extends Controller
             });
         }
 
-        // Sort
+        // Sort by booking date (not created_at)
         $sortBy = $request->get('sort', 'desc'); // 'desc' = Terbaru, 'asc' = Terlama
-        $bookings = $query->orderBy('created_at', $sortBy)->paginate(10);
+        $bookings = $query->orderBy('booking_date', $sortBy)
+            ->orderBy('start_time', $sortBy)
+            ->paginate(10);
 
         return view('admin.bookings.index', compact('bookings'));
     }

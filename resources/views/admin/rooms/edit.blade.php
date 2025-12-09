@@ -234,17 +234,15 @@
 </div>
 
 <script>
-function deleteRoom() {
-    if (confirm('Apakah Anda yakin ingin menghapus ruangan ini? Data tidak dapat dikembalikan.')) {
+async function deleteRoom() {
+    const confirmed = await confirmDelete('ruangan ini');
+    if (confirmed) {
         document.getElementById('deleteForm').submit();
     }
 }
 
 function deleteImage() {
-    if (confirm('Hapus gambar ini?')) {
-        document.getElementById('existingImage').style.display = 'none';
-        document.getElementById('deleteImageFlag').value = '1';
-    }
+    // Legacy function - not used anymore
 }
 
 // Calendar implementation
@@ -379,8 +377,9 @@ function nextMonth() {
 renderCalendar();
 
 // Image handling functions
-function removeExisting(index, imagePath) {
-    if (confirm('Apakah Anda yakin ingin menghapus foto ini?')) {
+async function removeExisting(index, imagePath) {
+    const confirmed = await confirmDelete('foto ini');
+    if (confirmed) {
         document.getElementById('slot' + index).innerHTML = `
             <div id="preview${index}" style="display: none; position: relative; width: 140px; height: 140px; border-radius: 8px; overflow: hidden; border: 2px solid #10b981;">
                 <img id="img${index}" src="" style="width: 100%; height: 100%; object-fit: cover;">

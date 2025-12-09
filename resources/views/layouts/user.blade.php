@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'User Dashboard') - SIPRUS</title>
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modal.css') }}">
     <style>
         .user-header {
             background: #FFF9E6;
@@ -189,6 +190,8 @@
     </footer>
 
     <script src="{{ asset('js/main.js') }}"></script>
+    <script src="{{ asset('js/modal.js') }}"></script>
+    @yield('scripts')
 </body>
 
 </html>

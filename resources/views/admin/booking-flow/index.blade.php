@@ -98,31 +98,32 @@
             const index = container.querySelectorAll('.step-item').length;
 
             const stepHtml = `
-                    <div class="step-item" style="background: #FFF9E6; border: 1px solid #E6D5A8; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative;">
-                        <div style="display: flex; gap: 1rem; align-items: start;">
-                            <div style="background: linear-gradient(135deg, #B8985F, #9d7d4b); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">
-                                <span class="step-number">${index + 1}</span>
+                        <div class="step-item" style="background: #FFF9E6; border: 1px solid #E6D5A8; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative;">
+                            <div style="display: flex; gap: 1rem; align-items: start;">
+                                <div style="background: linear-gradient(135deg, #B8985F, #9d7d4b); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">
+                                    <span class="step-number">${index + 1}</span>
+                                </div>
+                                <div style="flex: 1;">
+                                    <input type="text" name="steps[${index}][title]" placeholder="Judul langkah"
+                                        style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem;">
+                                    <textarea name="steps[${index}][description]" placeholder="Deskripsi langkah" rows="2"
+                                        style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.95rem; resize: vertical;"></textarea>
+                                    <p style="font-size: 0.75rem; color: #666; margin-top: 0.5rem;">* Gambar dapat diupload setelah menyimpan</p>
+                                </div>
+                                <button type="button" onclick="removeStep(this)" style="background: #fee2e2; color: #dc2626; border: none; padding: 0.5rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">
+                                    Hapus
+                                </button>
                             </div>
-                            <div style="flex: 1;">
-                                <input type="text" name="steps[${index}][title]" placeholder="Judul langkah"
-                                    style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem;">
-                                <textarea name="steps[${index}][description]" placeholder="Deskripsi langkah" rows="2"
-                                    style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.95rem; resize: vertical;"></textarea>
-                                <p style="font-size: 0.75rem; color: #666; margin-top: 0.5rem;">* Gambar dapat diupload setelah menyimpan</p>
-                            </div>
-                            <button type="button" onclick="removeStep(this)" style="background: #fee2e2; color: #dc2626; border: none; padding: 0.5rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">
-                                Hapus
-                            </button>
                         </div>
-                    </div>
-                `;
+                    `;
 
             container.insertAdjacentHTML('beforeend', stepHtml);
             updateStepNumbers();
         }
 
-        function removeStep(btn) {
-            if (confirm('Hapus langkah ini?')) {
+        async function removeStep(btn) {
+            const confirmed = await confirmDelete('langkah ini');
+            if (confirmed) {
                 btn.closest('.step-item').remove();
                 updateStepNumbers();
             }
@@ -160,8 +161,9 @@
                 });
         }
 
-        function deleteImage(stepId, btn) {
-            if (!confirm('Hapus gambar ini?')) return;
+        async function deleteImage(stepId, btn) {
+            const confirmed = await confirmDelete('gambar ini');
+            if (!confirmed) return;
 
             fetch(`/admin/booking-flow/${stepId}/delete-image`, {
                 method: 'DELETE',

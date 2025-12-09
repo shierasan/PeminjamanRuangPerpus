@@ -27,6 +27,7 @@
                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                         <input type="text" id="searchInput" placeholder="Cari berdasarkan nama"
+                            value="{{ request('search') }}"
                             style="width: 100%; padding: 0.75rem 1rem 0.75rem 3rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.95rem;">
                     </div>
                 </div>
@@ -34,7 +35,7 @@
                     <label style="display: block; font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">Urutkan</label>
                     <select id="sortSelect"
                         style="padding: 0.75rem 2.5rem 0.75rem 1rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.95rem; background: white url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%227%22 viewBox=%220 0 12 7%22%3E%3Cpath fill=%22%23666%22 d=%22M6 7L0 0h12z%22/%3E%3C/svg%3E') no-repeat right 1rem center; appearance: none; min-width: 150px;">
-                        <option value="desc" {{ request('sort') == 'desc' ? 'selected' : '' }}>Terbaru</option>
+                        <option value="desc" {{ request('sort', 'desc') == 'desc' ? 'selected' : '' }}>Terbaru</option>
                         <option value="asc" {{ request('sort') == 'asc' ? 'selected' : '' }}>Terlama</option>
                     </select>
                 </div>
@@ -79,7 +80,8 @@
                                 <td style="padding: 1rem;">{{ $booking->organizer ?? $booking->user->name }}</td>
                                 <td style="padding: 1rem;">{{ $booking->booking_date->format('d M Y') }}</td>
                                 <td style="padding: 1rem;">{{ date('H:i', strtotime($booking->start_time)) }} -
-                                    {{ date('H:i', strtotime($booking->end_time)) }}</td>
+                                    {{ date('H:i', strtotime($booking->end_time)) }}
+                                </td>
                                 <td style="padding: 1rem;">{{ $booking->room->name }}</td>
                                 <td style="padding: 1rem;">
                                     @if($booking->status === 'pending')
@@ -108,10 +110,10 @@
                                             Lihat Detail
                                         </a>
                                         <form action="{{ route('admin.history.destroy', $booking->id) }}" method="POST"
-                                            onsubmit="return confirm('Hapus riwayat ini?');" style="display: inline;">
+                                            id="delete-history-{{ $booking->id }}" style="display: inline;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit"
+                                            <button type="button" onclick="handleDeleteHistory({{ $booking->id }})"
                                                 style="padding: 0.4rem 0.6rem; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;">
                                                 <svg width="16" height="16" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
@@ -163,5 +165,13 @@
                 applyFilters();
             }
         });
+
+        // Handle delete with custom modal
+        async function handleDeleteHistory(id) {
+            const confirmed = await confirmDelete('riwayat ini');
+            if (confirmed) {
+                document.getElementById('delete-history-' + id).submit();
+            }
+        }
     </script>
 @endsection

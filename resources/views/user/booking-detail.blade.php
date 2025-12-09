@@ -146,11 +146,10 @@
                 @if($booking->status === 'pending')
                     {{-- Delete button for pending bookings --}}
                     <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
-                        <form action="{{ route('user.bookings.delete', $booking->id) }}" method="POST"
-                            onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengajuan ini? Tindakan ini tidak dapat dibatalkan.');">
+                        <form action="{{ route('user.bookings.delete', $booking->id) }}" method="POST" id="delete-booking-form">
                             @csrf
                             @method('DELETE')
-                            <button type="submit"
+                            <button type="button" onclick="handleDeleteBooking()"
                                 style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
                                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -169,8 +168,7 @@
                             <p style="color: #666; font-size: 0.875rem;">Jika Anda tidak dapat menggunakan ruangan, silakan
                                 ajukan pembatalan di bawah ini.</p>
                         </div>
-                        <form action="{{ route('user.bookings.cancel', $booking->id) }}" method="POST"
-                            onsubmit="return confirm('Apakah Anda yakin ingin mengajukan pembatalan?');">
+                        <form action="{{ route('user.bookings.cancel', $booking->id) }}" method="POST" id="cancel-booking-form">
                             @csrf
                             <div style="margin-bottom: 1rem;">
                                 <label
@@ -180,7 +178,7 @@
                                     style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.875rem; resize: vertical;"
                                     placeholder="Jelaskan alasan pembatalan..."></textarea>
                             </div>
-                            <button type="submit"
+                            <button type="button" onclick="handleCancelBooking()"
                                 style="padding: 0.75rem 1.5rem; background: #f59e0b; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
                                 Ajukan Pembatalan
                             </button>
@@ -269,4 +267,22 @@
             </div>
         </div>
     </div>
+
+    @section('scripts')
+        <script>
+            async function handleDeleteBooking() {
+                const confirmed = await confirmDelete('pengajuan peminjaman ini');
+                if (confirmed) {
+                    document.getElementById('delete-booking-form').submit();
+                }
+            }
+
+            async function handleCancelBooking() {
+                const confirmed = await confirmAction('mengajukan pembatalan peminjaman');
+                if (confirmed) {
+                    document.getElementById('cancel-booking-form').submit();
+                }
+            }
+        </script>
+    @endsection
 @endsection

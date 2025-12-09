@@ -131,11 +131,10 @@
 
                                             @if($booking->status === 'pending')
                                                 <form action="{{ route('user.bookings.delete', $booking->id) }}" method="POST"
-                                                    onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengajuan ini?')"
-                                                    style="margin: 0;">
+                                                    id="delete-booking-{{ $booking->id }}" style="margin: 0;">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit"
+                                                    <button type="button" onclick="handleDeleteBooking({{ $booking->id }})"
                                                         style="padding: 0.5rem; background: #fee2e2; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
                                                         <svg width="16" height="16" fill="none" stroke="#dc2626" stroke-width="2"
                                                             viewBox="0 0 24 24">
@@ -165,4 +164,15 @@
             @endif
         </div>
     </div>
+
+    @section('scripts')
+        <script>
+            async function handleDeleteBooking(id) {
+                const confirmed = await confirmDelete('pengajuan peminjaman ini');
+                if (confirmed) {
+                    document.getElementById('delete-booking-' + id).submit();
+                }
+            }
+        </script>
+    @endsection
 @endsection

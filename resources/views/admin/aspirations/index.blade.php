@@ -78,11 +78,10 @@
                                             Lihat Detail
                                         </a>
                                         <form action="{{ route('admin.aspirations.destroy', $aspiration->id) }}" method="POST"
-                                            onsubmit="return confirm('Yakin ingin menghapus aspirasi ini?');"
-                                            style="margin: 0;">
+                                            id="delete-aspiration-{{ $aspiration->id }}" style="margin: 0;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit"
+                                            <button type="button" onclick="handleDeleteAspiration({{ $aspiration->id }})"
                                                 style="padding: 0.4rem 0.75rem; background: #ef4444; color: white; border: none; border-radius: 6px; font-size: 0.875rem; cursor: pointer;">
                                                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                                                     <path
@@ -132,5 +131,13 @@
                 applyFilters();
             }
         });
+
+        // Handle delete with custom modal
+        async function handleDeleteAspiration(id) {
+            const confirmed = await confirmDelete('aspirasi ini');
+            if (confirmed) {
+                document.getElementById('delete-aspiration-' + id).submit();
+            }
+        }
     </script>
 @endsection

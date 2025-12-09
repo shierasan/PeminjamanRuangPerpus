@@ -273,12 +273,13 @@ class UserController extends Controller
 
     public function history(Request $request)
     {
-        // Sort - 'desc' = Terbaru, 'asc' = Terlama
+        // Sort by booking date (not created_at) - 'desc' = Terbaru, 'asc' = Terlama
         $sortBy = $request->get('sort', 'desc');
 
         $bookings = \App\Models\Booking::where('user_id', auth()->id())
             ->with('room')
-            ->orderBy('created_at', $sortBy)
+            ->orderBy('booking_date', $sortBy)
+            ->orderBy('start_time', $sortBy)
             ->get();
 
         return view('user.history', compact('bookings'));
@@ -337,11 +338,41 @@ class UserController extends Controller
 
         // Prioritize booking_id - redirect directly to booking detail
         if ($notification->booking_id) {
+            // Check if booking still exists
+            $booking = \App\Models\Booking::find($notification->booking_id);
+            if (!$booking) {
+                return redirect()->route('user.notifications')
+                    ->with('error', 'Detail peminjaman yang terkait dengan notifikasi ini sudah tidak tersedia atau telah dihapus.');
+            }
             return redirect()->route('user.bookings.detail', $notification->booking_id);
         }
 
         // Use link field if available (for announcements, aspirations, etc)
         if ($notification->link) {
+            // Check if it's an announcement link
+            if (str_contains($notification->link, 'announcements/')) {
+                preg_match('/announcements\/(\d+)/', $notification->link, $matches);
+                if (!empty($matches[1])) {
+                    $announcement = \App\Models\Announcement::find($matches[1]);
+                    if (!$announcement) {
+                        return redirect()->route('user.notifications')
+                            ->with('error', 'Pengumuman yang terkait dengan notifikasi ini sudah tidak tersedia atau telah dihapus.');
+                    }
+                }
+            }
+
+            // Check if it's an aspiration link
+            if (str_contains($notification->link, 'aspirations/')) {
+                preg_match('/aspirations\/(\d+)/', $notification->link, $matches);
+                if (!empty($matches[1])) {
+                    $aspiration = \App\Models\Aspiration::find($matches[1]);
+                    if (!$aspiration) {
+                        return redirect()->route('user.notifications')
+                            ->with('error', 'Aspirasi yang terkait dengan notifikasi ini sudah tidak tersedia atau telah dihapus.');
+                    }
+                }
+            }
+
             return redirect($notification->link);
         }
 

@@ -5,6 +5,15 @@
 @section('content')
     <div class="container" style="padding: 3rem 0; max-width: 900px;">
 
+        @if(session('error'))
+            <div style="background: #FEE2E2; border: 1px solid #FECACA; color: #DC2626; padding: 1rem 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>{{ session('error') }}</span>
+            </div>
+        @endif
+
         <div style="background: white; border-radius: 16px; padding: 3rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
 
             <!-- Header -->

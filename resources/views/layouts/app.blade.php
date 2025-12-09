@@ -9,6 +9,7 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modal.css') }}">
 </head>
 
 <body>
@@ -121,6 +122,7 @@
 
     <!-- JavaScript -->
     <script src="{{ asset('js/main.js') }}"></script>
+    <script src="{{ asset('js/modal.js') }}"></script>
     @yield('scripts')
 </body>
 

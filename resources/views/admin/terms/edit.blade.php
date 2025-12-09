@@ -145,8 +145,9 @@
     </div>
 
     <script>
-        function deleteTerm(id) {
-            if (confirm('Apakah Anda yakin ingin menghapus syarat ini?')) {
+        async function deleteTerm(id) {
+            const confirmed = await confirmDelete('syarat ini');
+            if (confirmed) {
                 fetch(`{{ url('admin/terms') }}/${id}`, {
                     method: 'DELETE',
                     headers: {
