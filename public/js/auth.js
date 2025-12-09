@@ -59,3 +59,19 @@ async function handleLogin(e) {
         alert('Terjadi kesalahan saat login. Silakan coba lagi.');
     }
 }
+
+// Toggle Password Visibility
+function togglePassword(fieldId) {
+    // If fieldId is provided, toggle that specific field
+    // If not provided (for login page), toggle the 'password' field
+    const targetId = fieldId || 'password';
+    const field = document.getElementById(targetId);
+
+    if (field) {
+        if (field.type === 'password') {
+            field.type = 'text';
+        } else {
+            field.type = 'password';
+        }
+    }
+}

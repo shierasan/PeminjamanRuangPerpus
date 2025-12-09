@@ -20,17 +20,29 @@
                             <span
                                 style="font-weight: 600; color: #000; font-size: 0.875rem;">{{ $booking->room->name }}</span>
                         </div>
-                        @if($booking->status === 'rejected')
+                        @if($booking->status === 'cancelled')
+                            <div style="display: flex; align-items: center; gap: 0.375rem; justify-content: flex-end;">
+                                <span
+                                    style="width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; display: inline-block;"></span>
+                                <span style="color: #f59e0b; font-size: 0.8125rem; font-weight: 500;">Dibatalkan</span>
+                            </div>
+                        @elseif($booking->status === 'rejected')
                             <div style="display: flex; align-items: center; gap: 0.375rem; justify-content: flex-end;">
                                 <span
                                     style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%; display: inline-block;"></span>
-                                <span style="color: #ef4444; font-size: 0.8125rem; font-weight: 500;">Dibatalkan</span>
+                                <span style="color: #ef4444; font-size: 0.8125rem; font-weight: 500;">Ditolak</span>
                             </div>
                         @elseif($booking->status === 'approved')
                             <div style="display: flex; align-items: center; gap: 0.375rem; justify-content: flex-end;">
                                 <span
                                     style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
                                 <span style="color: #10b981; font-size: 0.8125rem; font-weight: 500;">Disetujui</span>
+                            </div>
+                        @elseif($booking->status === 'pending')
+                            <div style="display: flex; align-items: center; gap: 0.375rem; justify-content: flex-end;">
+                                <span
+                                    style="width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; display: inline-block;"></span>
+                                <span style="color: #f59e0b; font-size: 0.8125rem; font-weight: 500;">Menunggu</span>
                             </div>
                         @endif
                     </div>
@@ -133,6 +145,22 @@
                         </div>
                     @endif
                 </div>
+
+                {{-- Cancelled status with reason --}}
+                @if($booking->status === 'cancelled')
+                    <div
+                        style="margin-top: 1.5rem; padding: 1rem; background: #FEF3C7; border-left: 4px solid #F59E0B; border-radius: 8px;">
+                        <div style="color: #92400E; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">
+                            ⚠️ Peminjaman Dibatalkan
+                        </div>
+                        @if($booking->cancellation_reason)
+                            <div style="color: #78350F; margin-bottom: 0.5rem;">
+                                <strong>Alasan Pembatalan:</strong>
+                            </div>
+                            <div style="color: #92400E;">{{ $booking->cancellation_reason }}</div>
+                        @endif
+                    </div>
+                @endif
 
                 <!-- Action Buttons -->
                 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem;">

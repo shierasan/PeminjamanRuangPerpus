@@ -13,6 +13,7 @@ use App\Http\Controllers\AdminRoomClosureController;
 use App\Http\Controllers\AspirationController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\TermController;
+use App\Http\Controllers\DisplayController;
 
 // Root - Landing Page
 Route::get('/', function () {
@@ -27,9 +28,11 @@ Route::get('/', function () {
 Route::get('/contacts', [ContactController::class, 'publicIndex'])->name('public.contacts');
 Route::get('/terms', [TermController::class, 'publicIndex'])->name('public.terms');
 
-// Authentication Routes (Admin Only)
+// Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Admin Routes
@@ -60,6 +63,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/bookings/{booking}', [AdminBookingController::class, 'show'])->name('bookings.show');
     Route::post('/bookings/{booking}/approve', [AdminBookingController::class, 'approve'])->name('bookings.approve');
     Route::post('/bookings/{booking}/reject', [AdminBookingController::class, 'reject'])->name('bookings.reject');
+    Route::post('/bookings/{booking}/key-returned', [AdminBookingController::class, 'markKeyReturned'])->name('bookings.key-returned');
 
     // Announcement Management
     Route::resource('announcements', AdminAnnouncementController::class);
@@ -124,4 +128,14 @@ Route::middleware(['auth', 'user'])->prefix('user')->name('user.')->group(functi
     Route::get('/terms', [TermController::class, 'userIndex'])->name('terms.index');
     Route::get('/announcements', [App\Http\Controllers\UserController::class, 'announcements'])->name('announcements.index');
     Route::get('/announcements/{id}', [App\Http\Controllers\UserController::class, 'announcementDetail'])->name('announcements.show');
+
+    // Booking management
+    Route::delete('/bookings/{id}/delete', [App\Http\Controllers\UserController::class, 'deletePendingBooking'])->name('bookings.delete');
+    Route::post('/bookings/{id}/cancel', [App\Http\Controllers\UserController::class, 'requestCancellation'])->name('bookings.cancel');
+});
+
+// Display Routes (Public Display Monitor)
+Route::middleware(['auth', 'display'])->prefix('display')->name('display.')->group(function () {
+    Route::get('/', [DisplayController::class, 'index'])->name('index');
+    Route::get('/room/{id}', [DisplayController::class, 'showRoom'])->name('room');
 });

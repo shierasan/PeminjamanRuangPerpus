@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Admin - Perpustakaan Unand')</title>
+    <title>@yield('title', 'Admin - SIPRUS')</title>
 
     <!-- Styles -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
@@ -17,10 +17,10 @@
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo Perpustakaan" width="50">
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo SIPRUS" width="50">
                     <div class="logo-text">
-                        <h1>Perpustakaan</h1>
-                        <p>Universitas Andalas</p>
+                        <h1 style="color: #B8985F;">SIPRUS</h1>
+                        <p style="font-size: 0.65rem;">Sistem Peminjaman Ruang Pustaka</p>
                     </div>
                 </div>
 

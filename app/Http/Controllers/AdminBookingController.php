@@ -91,4 +91,41 @@ class AdminBookingController extends Controller
         return redirect()->route('admin.bookings.index')
             ->with('success', 'Peminjaman berhasil ditolak');
     }
+
+    public function markKeyReturned(Booking $booking)
+    {
+        $booking->update([
+            'key_returned' => true,
+            'key_returned_at' => now(),
+            'completed_at' => now(),
+        ]);
+
+        // Load relationships
+        $booking->load(['room', 'user']);
+
+        // Send notification to user
+        \App\Models\Notification::create([
+            'user_id' => $booking->user_id,
+            'booking_id' => $booking->id,
+            'type' => 'key_returned',
+            'title' => 'Kunci Ruangan Telah Dikembalikan',
+            'message' => 'Terima kasih telah mengembalikan kunci ruangan ' . $booking->room->name . '. Peminjaman Anda telah selesai.',
+            'link' => route('user.bookings.detail', $booking->id),
+        ]);
+
+        // Send notification to all admins
+        $admins = \App\Models\User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            \App\Models\Notification::create([
+                'user_id' => $admin->id,
+                'booking_id' => $booking->id,
+                'type' => 'booking_completed',
+                'title' => 'Peminjaman Selesai',
+                'message' => 'Peminjaman ruangan ' . $booking->room->name . ' oleh ' . $booking->user->name . ' telah selesai. Kunci telah dikembalikan pada ' . now()->format('d M Y H:i') . '.',
+                'link' => route('admin.bookings.show', $booking->id),
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Kunci ruangan berhasil ditandai sebagai dikembalikan.');
+    }
 }

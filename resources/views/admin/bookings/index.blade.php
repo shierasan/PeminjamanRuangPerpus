@@ -77,15 +77,65 @@
                                     {{ date('H:i', strtotime($booking->end_time)) }}
                                 </td>
                                 <td style="padding: 1rem;">
-                                    @if($booking->status === 'pending')
+                                    @if($booking->status === 'cancelled')
+                                        {{-- Cancelled status - Yellow/Orange --}}
+                                        <div style="display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start;">
+                                            <span
+                                                style="padding: 0.4rem 1rem; background: #FEF3C7; color: #92400E; border-radius: 6px; font-size: 0.875rem; display: inline-block; font-weight: 500;">
+                                                Dibatalkan
+                                            </span>
+                                            @if($booking->cancellation_reason)
+                                                <small
+                                                    style="color: #666; font-size: 0.7rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                                    title="{{ $booking->cancellation_reason }}">
+                                                    {{ Str::limit($booking->cancellation_reason, 30) }}
+                                                </small>
+                                            @endif
+                                        </div>
+                                    @elseif($booking->status === 'pending')
                                         <a href="{{ route('admin.bookings.show', $booking->id) }}"
                                             style="padding: 0.4rem 1rem; background: #f59e0b; color: white; border-radius: 6px; font-size: 0.875rem; text-decoration: none; display: inline-block; font-weight: 500;">
                                             Tinjau
                                         </a>
                                     @elseif($booking->status === 'approved')
-                                        <span
-                                            style="padding: 0.4rem 1rem; background: #10b981; color: white; border-radius: 6px; font-size: 0.875rem; display: inline-block;">Setuju</span>
-                                    @else
+                                        @if($booking->isWaitingKeyReturn())
+                                            {{-- Waiting for key return --}}
+                                            <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start;">
+                                                <span
+                                                    style="padding: 0.3rem 0.75rem; background: #FEF3C7; color: #92400E; border-radius: 4px; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                            clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Menunggu Kunci
+                                                </span>
+                                                <form action="{{ route('admin.bookings.key-returned', $booking->id) }}" method="POST"
+                                                    style="display: inline;">
+                                                    @csrf
+                                                    <button type="submit"
+                                                        style="padding: 0.4rem 0.75rem; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 500;">
+                                                        ✓ Kunci Dikembalikan
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        @elseif($booking->key_returned)
+                                            {{-- Completed --}}
+                                            <span
+                                                style="padding: 0.4rem 1rem; background: #d1fae5; color: #059669; border-radius: 6px; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                Selesai
+                                            </span>
+                                        @else
+                                            {{-- Approved and active or upcoming --}}
+                                            <span
+                                                style="padding: 0.4rem 1rem; background: #10b981; color: white; border-radius: 6px; font-size: 0.875rem; display: inline-block;">Setuju</span>
+                                        @endif
+                                    @elseif($booking->status === 'rejected')
                                         <span
                                             style="padding: 0.4rem 1rem; background: #ef4444; color: white; border-radius: 6px; font-size: 0.875rem; display: inline-block;">Tolak</span>
                                     @endif

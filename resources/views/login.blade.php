@@ -1,43 +1,45 @@
 @extends('layouts.auth')
 
-@section('title', 'Login - Sistem Peminjaman Ruangan Perpustakaan')
-@section('meta_description', 'Login - Sistem Peminjaman Ruangan Perpustakaan Universitas Andalas')
+@section('title', 'Login - SIPRUS')
+@section('meta_description', 'Login - SIPRUS Universitas Andalas')
 
 @section('auth_left_description')
-    Masuk ke akun Anda dan mulai reservasi ruangan dengan mudah.
+    Platform reservasi ruangan perpustakaan Universitas Andalas yang modern, cepat, dan mudah digunakan.
 @endsection
 
 @section('content')
-    <h2>Selamat Datang</h2>
-    <p class="auth-subtitle">Masuk ke akun Anda dan mulai reservasi ruangan dengan mudah.</p>
+    <div class="auth-form-header">
+        <h2>Selamat Datang! 👋</h2>
+        <p>Masuk ke akun Anda untuk melanjutkan</p>
+    </div>
 
-    <form id="loginForm" class="auth-form">
+    <form id="loginForm" class="modern-form">
         @csrf
         <!-- Email -->
         <div class="form-group">
             <label for="email">Email</label>
-            <div class="input-with-icon">
-                <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="modern-input-wrapper">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207">
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
                     </path>
                 </svg>
-                <input type="email" id="email" name="email" placeholder="example@email.com" required>
+                <input type="email" id="email" name="email" class="modern-input" placeholder="nama@email.com" required>
             </div>
         </div>
 
         <!-- Password -->
         <div class="form-group">
             <label for="password">Password</label>
-            <div class="input-with-icon">
-                <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="modern-input-wrapper">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
                     </path>
                 </svg>
-                <input type="password" id="password" name="password" placeholder="password123" required>
-                <button type="button" class="toggle-password" onclick="togglePassword()">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <input type="password" id="password" name="password" class="modern-input" placeholder="••••••••" required>
+                <button type="button" class="password-toggle" onclick="togglePassword()">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -49,24 +51,24 @@
         </div>
 
         <!-- Remember & Forgot -->
-        <div class="form-options">
-            <label class="checkbox-label">
+        <div class="form-options-row">
+            <label class="remember-check">
                 <input type="checkbox" name="remember">
-                <span>Remember me</span>
+                <span>Ingat saya</span>
             </label>
-            <a href="#" class="forgot-link">Lupa Password?</a>
+            <a href="#" class="forgot-password">Lupa Password?</a>
         </div>
 
         <!-- Login Button -->
-        <button type="submit" class="btn btn-primary btn-block">Log In</button>
+        <button type="submit" class="btn-login">Masuk</button>
 
         <!-- Divider -->
-        <div class="auth-divider">
-            <span>atau</span>
+        <div class="divider">
+            <span>atau masuk dengan</span>
         </div>
 
         <!-- SSO Button -->
-        <button type="button" class="btn btn-sso btn-block">
+        <button type="button" class="btn-sso-unand">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -77,12 +79,12 @@
                 <path
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
-            Log In dengan Universitas Andalas eMail
+            Universitas Andalas eMail
         </button>
 
         <!-- Sign Up Link -->
-        <p class="auth-footer">
-            Belum punya akun? <a href="{{ url('/register') }}" class="auth-link">Daftar Sekarang</a>
+        <p class="register-link">
+            Belum punya akun? <a href="{{ url('/register') }}">Daftar Sekarang</a>
         </p>
     </form>
 @endsection

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Syarat dan Ketentuan - Perpustakaan Unand</title>
+    <title>Syarat dan Ketentuan - SIPRUS</title>
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
 
@@ -14,10 +14,10 @@
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo Perpustakaan" class="logo-img">
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo SIPRUS" class="logo-img">
                     <div class="logo-text">
-                        <h1>Perpustakaan</h1>
-                        <p>Universitas Andalas</p>
+                        <h1 style="color: #B8985F;">SIPRUS</h1>
+                        <p style="font-size: 0.65rem;">Sistem Peminjaman Ruang Pustaka</p>
                     </div>
                 </div>
 

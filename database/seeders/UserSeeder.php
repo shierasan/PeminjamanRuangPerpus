@@ -41,6 +41,14 @@ class UserSeeder extends Seeder
             'role' => 'user',
         ]);
 
+        // Create Display User
+        User::create([
+            'name' => 'Display Monitor',
+            'email' => 'display@unand.ac.id',
+            'password' => Hash::make('display123'),
+            'role' => 'display',
+        ]);
+
         // Create sample notification for admin (for testing)
         Notification::create([
             'user_id' => $admin->id,

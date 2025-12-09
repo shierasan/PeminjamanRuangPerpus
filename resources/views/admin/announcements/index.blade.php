@@ -51,11 +51,21 @@
                         <p style="color: #666; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">
                             {{ Str::limit($announcement->content, 150) }}
                         </p>
-                        <div style="text-align: right;">
+                        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 1rem;">
                             <a href="{{ route('admin.announcements.edit', $announcement->id) }}"
                                 style="color: #B8985F; font-size: 0.9rem; text-decoration: none; font-weight: 500;">
-                                Edit Pengumuman »
+                                Edit »
                             </a>
+                            <form action="{{ route('admin.announcements.destroy', $announcement->id) }}" method="POST"
+                                style="display: inline;"
+                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengumuman ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                    style="background: none; border: none; color: #ef4444; font-size: 0.9rem; font-weight: 500; cursor: pointer; padding: 0;">
+                                    Hapus
+                                </button>
+                            </form>
                         </div>
                     </div>
                 @empty

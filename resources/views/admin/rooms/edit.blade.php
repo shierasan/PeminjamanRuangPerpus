@@ -7,8 +7,18 @@
     <div style="background: white; border-radius: 12px; padding: 2.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <h1 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 2rem;">Form Edit Ruangan</h1>
 
-        <form action="{{ route('admin.rooms.update', $room) }}" method="POST" enctype="multipart/form-data"
-            onsubmit="return confirm('Apakah Anda yakin ingin menyimpan perubahan ini?');">
+        {{-- Error Display --}}
+        @if ($errors->any())
+            <div style="background: #fef2f2; border: 1px solid #ef4444; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                <ul style="margin: 0; padding-left: 1.25rem; color: #dc2626;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form id="editForm" action="{{ route('admin.rooms.update', $room) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -103,39 +113,54 @@
                 </div>
             </div>
 
-            {{-- Dokumentasi Ruangan --}}
+            {{-- Dokumentasi Ruangan (3 Separate Slots) --}}
+            @php
+                // Get all images - check images array first, then fall back to single image
+                $allImages = $room->images ?? [];
+                if (empty($allImages) && $room->image) {
+                    $allImages = [$room->image];
+                }
+                // Pad array to 3 elements
+                while (count($allImages) < 3) {
+                    $allImages[] = null;
+                }
+            @endphp
             <div style="margin-bottom: 2rem;">
-                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1a1a1a;">Dokumentasi
-                    Ruangan</label>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1a1a1a;">Foto Ruangan (Maksimal 3 foto)</label>
+                <p style="font-size: 0.875rem; color: #666; margin-bottom: 1rem;">Foto pertama akan menjadi foto profil ruangan.</p>
                 
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
-                    {{-- Existing Image --}}
-                    @if($room->image)
-                        <div id="existingImage" style="position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 1;">
-                            <img src="{{ asset('storage/' . $room->image) }}" alt="{{ $room->name }}"
-                                style="width: 100%; height: 100%; object-fit: cover;">
-                            <button type="button" onclick="deleteImage()"
-                                style="position: absolute; top: 0.5rem; right: 0.5rem; width: 28px; height: 28px; background: rgba(239, 68, 68, 0.9); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                                <svg width="14" height="14" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    @foreach([0, 1, 2] as $index)
+                        <div style="width: 140px;">
+                            @if($allImages[$index])
+                                {{-- Existing Image --}}
+                                <div id="slot{{ $index }}" style="position: relative; width: 140px; height: 140px; border-radius: 8px; overflow: hidden; border: 2px solid {{ $index === 0 ? '#B8985F' : '#ddd' }};">
+                                    <img src="{{ asset('storage/' . $allImages[$index]) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    @if($index === 0)
+                                        <span style="position: absolute; top: 4px; left: 4px; background: #B8985F; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px;">Profil</span>
+                                    @endif
+                                    <button type="button" onclick="removeExisting({{ $index }}, '{{ $allImages[$index] }}')"
+                                        style="position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; background: rgba(239,68,68,0.9); border: none; border-radius: 50%; color: white; cursor: pointer; font-size: 14px;">×</button>
+                                </div>
+                                <input type="hidden" name="delete_images[]" value="" id="delete{{ $index }}" disabled>
+                            @else
+                                {{-- Empty Slot --}}
+                                <div id="slot{{ $index }}">
+                                    <div id="preview{{ $index }}" style="display: none; position: relative; width: 140px; height: 140px; border-radius: 8px; overflow: hidden; border: 2px solid #10b981;">
+                                        <img id="img{{ $index }}" src="" style="width: 100%; height: 100%; object-fit: cover;">
+                                        <span style="position: absolute; top: 4px; left: 4px; background: #10b981; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px;">Baru</span>
+                                        <button type="button" onclick="clearNew({{ $index }})" style="position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(239,68,68,0.9); border: none; border-radius: 50%; color: white; cursor: pointer; font-size: 12px;">×</button>
+                                    </div>
+                                    <div id="upload{{ $index }}" onclick="document.getElementById('newImage{{ $index }}').click()"
+                                        style="width: 140px; height: 140px; border: 2px dashed {{ $index === 0 ? '#B8985F' : '#ddd' }}; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: {{ $index === 0 ? '#fffbf0' : '#fafafa' }};">
+                                        <svg width="24" height="24" fill="none" stroke="{{ $index === 0 ? '#B8985F' : '#999' }}" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                        <div style="font-size: 0.75rem; color: {{ $index === 0 ? '#B8985F' : '#999' }}; margin-top: 0.5rem;">{{ $index === 0 ? 'Foto Profil' : 'Foto ' . ($index + 1) }}</div>
+                                    </div>
+                                    <input type="file" id="newImage{{ $index }}" name="images[]" accept=".png,.jpg,.jpeg" style="display: none;" onchange="previewNew(this, {{ $index }})">
+                                </div>
+                            @endif
                         </div>
-                        <input type="hidden" id="deleteImageFlag" name="delete_image" value="0">
-                    @endif
-
-                    {{-- Upload New Image --}}
-                    <div onclick="document.getElementById('imageUpload').click()"
-                        style="border: 2px dashed #ddd; border-radius: 12px; padding: 2rem 1rem; text-align: center; cursor: pointer; background: #fafafa; transition: all 0.3s; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;"
-                        onmouseover="this.style.borderColor='#B8985F'; this.style.background='#fcfcfc'"
-                        onmouseout="this.style.borderColor='#ddd'; this.style.background='#fafafa'">
-                        <svg width="32" height="32" fill="none" stroke="#999" viewBox="0 0 24 24" style="margin-bottom: 0.5rem;">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                        </svg>
-                        <div style="font-size: 0.75rem; color: #999;">Klik atau drag and drop untuk upload</div>
-                        <div style="font-size: 0.65rem; color: #ccc; margin-top: 0.25rem;">PNG, JPG, JPEG</div>
-                        <input type="file" id="imageUpload" name="image" accept=".png,.jpg,.jpeg" style="display: none;">
-                    </div>
+                    @endforeach
                 </div>
             </div>
 
@@ -185,18 +210,12 @@
                         Batalkan
                     </a>
                     
-                    <form action="{{ route('admin.rooms.destroy', $room) }}" method="POST" 
-                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus ruangan ini? Data tidak dapat dikembalikan.');" 
-                        style="display: inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit"
-                            style="padding: 0.75rem 2rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;"
-                            onmouseover="this.style.background='#dc2626'"
-                            onmouseout="this.style.background='#ef4444'">
-                            Hapus Ruangan
-                        </button>
-                    </form>
+                    <button type="button" onclick="deleteRoom()"
+                        style="padding: 0.75rem 2rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;"
+                        onmouseover="this.style.background='#dc2626'"
+                        onmouseout="this.style.background='#ef4444'">
+                        Hapus Ruangan
+                    </button>
                 </div>
                 
                 <button type="submit"
@@ -205,10 +224,22 @@
                 </button>
             </div>
         </form>
+        
+        {{-- Separate delete form (outside main form) --}}
+        <form id="deleteForm" action="{{ route('admin.rooms.destroy', $room) }}" method="POST" style="display: none;">
+            @csrf
+            @method('DELETE')
+        </form>
     </div>
 </div>
 
 <script>
+function deleteRoom() {
+    if (confirm('Apakah Anda yakin ingin menghapus ruangan ini? Data tidak dapat dikembalikan.')) {
+        document.getElementById('deleteForm').submit();
+    }
+}
+
 function deleteImage() {
     if (confirm('Hapus gambar ini?')) {
         document.getElementById('existingImage').style.display = 'none';
@@ -219,6 +250,7 @@ function deleteImage() {
 // Calendar implementation
 let currentDate = new Date();
 const bookings = @json($bookings);
+const closures = @json($closures);
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 
@@ -232,6 +264,14 @@ function isPastDate(year, month, day) {
     return date < today;
 }
 
+// H-2 rule: booking must be at least 2 days in advance
+function isWithinMinBookingDays(year, month, day) {
+    const date = new Date(year, month, day);
+    const minBookingDate = new Date(today);
+    minBookingDate.setDate(minBookingDate.getDate() + 2);
+    return date < minBookingDate;
+}
+
 function hasAnyBooking(dateStr) {
     return bookings.some(b => b.booking_date === dateStr);
 }
@@ -242,6 +282,10 @@ function getBookingsForDate(dateStr) {
 
 function isFullyBooked(dateStr) {
     return getBookingsForDate(dateStr).length >= 3;
+}
+
+function getClosureInfo(dateStr) {
+    return closures[dateStr] || { is_whole_day_closed: false, has_closures: false, count: 0 };
 }
 
 function renderCalendar() {
@@ -273,6 +317,7 @@ function renderCalendar() {
     for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const isCurrentDay = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+        const closureInfo = getClosureInfo(dateStr);
         
         let bgColor = '#10b981'; // Default: Green (available)
         let textColor = 'white';
@@ -282,9 +327,24 @@ function renderCalendar() {
             bgColor = '#e5e7eb';
             textColor = '#9ca3af';
         }
+        // H-2 rule - light grey
+        else if (isWithinMinBookingDays(year, month, day)) {
+            bgColor = '#f3f4f6';
+            textColor = '#9ca3af';
+        }
         // Sunday - red (closed)
         else if (isSunday(year, month, day)) {
             bgColor = '#EF4444';
+            textColor = 'white';
+        }
+        // Room closed (whole day) - dark red/maroon
+        else if (closureInfo.is_whole_day_closed) {
+            bgColor = '#991b1b';
+            textColor = 'white';
+        }
+        // Has some closures (partial) - yellow
+        else if (closureInfo.has_closures) {
+            bgColor = '#F59E0B';
             textColor = 'white';
         }
         // Fully booked (3+ approved) - red
@@ -317,5 +377,53 @@ function nextMonth() {
 
 // Initialize calendar
 renderCalendar();
+
+// Image handling functions
+function removeExisting(index, imagePath) {
+    if (confirm('Apakah Anda yakin ingin menghapus foto ini?')) {
+        document.getElementById('slot' + index).innerHTML = `
+            <div id="preview${index}" style="display: none; position: relative; width: 140px; height: 140px; border-radius: 8px; overflow: hidden; border: 2px solid #10b981;">
+                <img id="img${index}" src="" style="width: 100%; height: 100%; object-fit: cover;">
+                <span style="position: absolute; top: 4px; left: 4px; background: #10b981; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px;">Baru</span>
+                <button type="button" onclick="clearNew(${index})" style="position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(239,68,68,0.9); border: none; border-radius: 50%; color: white; cursor: pointer; font-size: 12px;">×</button>
+            </div>
+            <div id="upload${index}" onclick="document.getElementById('newImage${index}').click()"
+                style="width: 140px; height: 140px; border: 2px dashed #ddd; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: #fafafa;">
+                <svg width="24" height="24" fill="none" stroke="#999" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                <div style="font-size: 0.75rem; color: #999; margin-top: 0.5rem;">Foto ${index + 1}</div>
+            </div>
+            <input type="file" id="newImage${index}" name="images[]" accept=".png,.jpg,.jpeg" style="display: none;" onchange="previewNew(this, ${index})">
+        `;
+        const deleteInput = document.getElementById('delete' + index);
+        if (deleteInput) {
+            deleteInput.value = imagePath;
+            deleteInput.disabled = false;
+        } else {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'delete_images[]';
+            input.value = imagePath;
+            document.getElementById('editForm').appendChild(input);
+        }
+    }
+}
+
+function previewNew(input, index) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('img' + index).src = e.target.result;
+            document.getElementById('preview' + index).style.display = 'block';
+            document.getElementById('upload' + index).style.display = 'none';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function clearNew(index) {
+    document.getElementById('newImage' + index).value = '';
+    document.getElementById('preview' + index).style.display = 'none';
+    document.getElementById('upload' + index).style.display = 'flex';
+}
 </script>
 @endsection

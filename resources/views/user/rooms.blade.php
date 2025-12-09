@@ -8,7 +8,7 @@
         <!-- Page Header -->
         <div style="text-align: center; margin-bottom: 3rem;">
             <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: #1a1a1a;">
-                Daftar Ruangan Perpustakaan
+                Daftar Ruangan
             </h1>
             <p style="color: #666;">
                 Pilih ruangan yang ingin digunakan dan lanjutkan ke peminjaman
@@ -272,6 +272,14 @@
             return date < today;
         }
 
+        // H-2 rule: booking must be at least 2 days in advance
+        function isWithinMinBookingDays(year, month, day) {
+            const date = new Date(year, month, day);
+            const minBookingDate = new Date(today);
+            minBookingDate.setDate(minBookingDate.getDate() + 2);
+            return date < minBookingDate;
+        }
+
         function getBookingInfo(dateStr) {
             return allBookings[dateStr] || { count: 0, approved_count: 0, rooms_booked: 0 };
         }
@@ -318,6 +326,11 @@
                 // Past dates - grey
                 if (isPastDate(year, month, day)) {
                     bgColor = '#e5e7eb';
+                    textColor = '#9ca3af';
+                }
+                // H-2 rule - light grey
+                else if (isWithinMinBookingDays(year, month, day)) {
+                    bgColor = '#f3f4f6';
                     textColor = '#9ca3af';
                 }
                 // Sunday - red (closed)

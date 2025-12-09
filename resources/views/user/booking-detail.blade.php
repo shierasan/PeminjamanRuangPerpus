@@ -125,6 +125,82 @@
                         <div style="color: #047857;">{{ $booking->admin_note }}</div>
                     </div>
                 @endif
+
+                {{-- Cancelled status with reason --}}
+                @if($booking->status === 'cancelled')
+                    <div
+                        style="margin-top: 1.5rem; padding: 1rem; background: #FEF3C7; border-left: 4px solid #F59E0B; border-radius: 8px;">
+                        <div style="color: #92400E; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">
+                            ⚠️ Peminjaman Dibatalkan
+                        </div>
+                        @if($booking->cancellation_reason)
+                            <div style="color: #78350F; margin-bottom: 0.5rem;">
+                                <strong>Alasan Pembatalan:</strong>
+                            </div>
+                            <div style="color: #92400E;">{{ $booking->cancellation_reason }}</div>
+                        @endif
+                    </div>
+                @endif
+
+                {{-- Action Buttons Section --}}
+                @if($booking->status === 'pending')
+                    {{-- Delete button for pending bookings --}}
+                    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+                        <form action="{{ route('user.bookings.delete', $booking->id) }}" method="POST"
+                            onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengajuan ini? Tindakan ini tidak dapat dibatalkan.');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                    </path>
+                                </svg>
+                                Hapus Pengajuan
+                            </button>
+                        </form>
+                    </div>
+                @elseif($booking->status === 'approved' && !$booking->cancellation_requested && !$booking->key_returned)
+                    {{-- Cancel request button for approved bookings --}}
+                    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+                        <div style="margin-bottom: 1rem;">
+                            <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 0.5rem;">Ajukan Pembatalan</h4>
+                            <p style="color: #666; font-size: 0.875rem;">Jika Anda tidak dapat menggunakan ruangan, silakan
+                                ajukan pembatalan di bawah ini.</p>
+                        </div>
+                        <form action="{{ route('user.bookings.cancel', $booking->id) }}" method="POST"
+                            onsubmit="return confirm('Apakah Anda yakin ingin mengajukan pembatalan?');">
+                            @csrf
+                            <div style="margin-bottom: 1rem;">
+                                <label
+                                    style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem; font-size: 0.875rem;">Alasan
+                                    Pembatalan <span style="color: #ef4444;">*</span></label>
+                                <textarea name="cancellation_reason" rows="3" required
+                                    style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.875rem; resize: vertical;"
+                                    placeholder="Jelaskan alasan pembatalan..."></textarea>
+                            </div>
+                            <button type="submit"
+                                style="padding: 0.75rem 1.5rem; background: #f59e0b; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                Ajukan Pembatalan
+                            </button>
+                        </form>
+                    </div>
+                @elseif($booking->cancellation_requested && $booking->cancellation_status === 'pending')
+                    {{-- Cancellation pending notice --}}
+                    <div
+                        style="margin-top: 2rem; padding: 1rem; background: #FEF3C7; border-left: 4px solid #F59E0B; border-radius: 8px;">
+                        <div style="color: #92400E; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">
+                            ⏳ Pembatalan Sedang Diproses
+                        </div>
+                        <div style="color: #78350F;">Pengajuan pembatalan Anda sedang menunggu persetujuan admin.</div>
+                        @if($booking->cancellation_reason)
+                            <div style="margin-top: 0.5rem; color: #92400E; font-size: 0.875rem;">
+                                <strong>Alasan:</strong> {{ $booking->cancellation_reason }}
+                            </div>
+                        @endif
+                    </div>
+                @endif
             </div>
 
             <!-- Right Column: Room Information - Image at Top -->

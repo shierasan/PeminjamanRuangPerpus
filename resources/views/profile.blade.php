@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Profile - Sistem Peminjaman Ruangan Perpustakaan')
-@section('meta_description', 'Profile - Sistem Peminjaman Ruangan Perpustakaan Universitas Andalas')
+@section('title', 'Profile - SIPRUS')
+@section('meta_description', 'Profile - SIPRUS Universitas Andalas')
 
 @section('nav_items')
     <li class="nav-item">

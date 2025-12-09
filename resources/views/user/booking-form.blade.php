@@ -82,6 +82,20 @@
                             <option value="17:00">17:00</option>
                         </select>
                     </div>
+
+                    {{-- Info message about max duration --}}
+                    <div
+                        style="background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 8px; padding: 0.75rem 1rem; margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="20" height="20" fill="#D97706" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                        <span style="color: #92400E; font-size: 0.875rem; font-weight: 500;">
+                            Durasi peminjaman maksimal <strong>2 jam</strong>. Kunci ruangan harus dikembalikan setelah
+                            waktu selesai.
+                        </span>
+                    </div>
                 </div>
 
                 <!-- Informasi Kegiatan -->
@@ -219,5 +233,61 @@
                     `<strong style="color: #10b981;">✓ ${fileName}</strong> (${fileSize} MB)`;
             }
         });
+
+        // 2-hour max duration validation
+        const startTimeSelect = document.querySelector('select[name="start_time"]');
+        const endTimeSelect = document.querySelector('select[name="end_time"]');
+
+        startTimeSelect.addEventListener('change', function () {
+            updateEndTimeOptions();
+        });
+
+        endTimeSelect.addEventListener('change', function () {
+            validateDuration();
+        });
+
+        function updateEndTimeOptions() {
+            const startTime = startTimeSelect.value;
+            if (!startTime) return;
+
+            const startHour = parseInt(startTime.split(':')[0]);
+            const maxEndHour = Math.min(startHour + 2, 17); // Max 2 hours, but not past 17:00
+
+            // Update end time options
+            Array.from(endTimeSelect.options).forEach(option => {
+                if (option.value === '') return;
+                const endHour = parseInt(option.value.split(':')[0]);
+
+                if (endHour <= startHour || endHour > maxEndHour) {
+                    option.disabled = true;
+                    option.style.color = '#ccc';
+                } else {
+                    option.disabled = false;
+                    option.style.color = '';
+                }
+            });
+
+            // Auto-select max end time (2 hours after start)
+            const autoEndTime = (startHour + 2).toString().padStart(2, '0') + ':00';
+            if (endTimeSelect.querySelector(`option[value="${autoEndTime}"]`)) {
+                endTimeSelect.value = autoEndTime;
+            }
+        }
+
+        function validateDuration() {
+            const startTime = startTimeSelect.value;
+            const endTime = endTimeSelect.value;
+
+            if (!startTime || !endTime) return;
+
+            const startHour = parseInt(startTime.split(':')[0]);
+            const endHour = parseInt(endTime.split(':')[0]);
+            const duration = endHour - startHour;
+
+            if (duration > 2) {
+                alert('Durasi peminjaman maksimal 2 jam!');
+                endTimeSelect.value = '';
+            }
+        }
     </script>
 @endsection

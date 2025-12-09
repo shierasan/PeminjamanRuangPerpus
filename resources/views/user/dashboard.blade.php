@@ -25,7 +25,8 @@
                             <p style="color: #666; line-height: 1.6; margin-bottom: 1.5rem;">
                                 {{ Str::limit($announcement->content, 150) }}
                             </p>
-                            <a href="#" style="color: #B8985F; font-weight: 600; text-decoration: none;">
+                            <a href="{{ route('user.announcements.show', $announcement->id) }}"
+                                style="color: #B8985F; font-weight: 600; text-decoration: none;">
                                 Baca selengkapnya »
                             </a>
                         </div>

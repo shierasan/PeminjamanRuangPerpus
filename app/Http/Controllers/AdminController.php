@@ -33,13 +33,36 @@ class AdminController extends Controller
         return view('admin.dashboard', compact('stats', 'pending_bookings', 'today_bookings'));
     }
 
-    public function notifications()
+    public function notifications(Request $request)
     {
-        $notifications = \App\Models\Notification::where('user_id', auth()->id())
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = \App\Models\Notification::where('user_id', auth()->id());
 
-        return view('admin.notifications', compact('notifications'));
+        // Filter by type
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // Filter by read status
+        if ($request->filled('status')) {
+            if ($request->status === 'unread') {
+                $query->where('is_read', false);
+            } elseif ($request->status === 'read') {
+                $query->where('is_read', true);
+            }
+        }
+
+        // Sort
+        $sortBy = $request->get('sort', 'desc');
+        $notifications = $query->orderBy('created_at', $sortBy)->get();
+
+        // Get unique types for filter dropdown
+        $types = \App\Models\Notification::where('user_id', auth()->id())
+            ->distinct()
+            ->pluck('type')
+            ->filter()
+            ->values();
+
+        return view('admin.notifications', compact('notifications', 'types'));
     }
 
     public function markAsRead($id)

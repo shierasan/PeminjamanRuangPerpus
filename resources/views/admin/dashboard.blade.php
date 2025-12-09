@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Admin - Perpustakaan Unand')
+@section('title', 'Dashboard Admin - SIPRUS')
 
 @section('content')
     <!-- ADMIN DASHBOARD SECTION -->
@@ -152,7 +152,7 @@
                                         Waktu</th>
                                     <th
                                         style="padding: 1rem; text-align: left; font-size: 0.875rem; font-weight: 600; color: var(--color-dark);">
-                                        Keperluan</th>
+                                        Nama Kegiatan</th>
                                     <th
                                         style="padding: 1rem; text-align: left; font-size: 0.875rem; font-weight: 600; color: var(--color-dark);">
                                         Status</th>
@@ -169,7 +169,7 @@
                                         <td style="padding: 1rem; color: var(--color-text);">
                                             {{ date('H:i', strtotime($booking->start_time)) }} -
                                             {{ date('H:i', strtotime($booking->end_time)) }}</td>
-                                        <td style="padding: 1rem; color: var(--color-text);">{{ Str::limit($booking->purpose, 50) }}
+                                        <td style="padding: 1rem; color: var(--color-text);">{{ Str::limit($booking->event_name ?? '-', 50) }}
                                         </td>
                                         <td style="padding: 1rem;">
                                             <span

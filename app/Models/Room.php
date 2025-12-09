@@ -16,6 +16,7 @@ class Room extends Model
         'facilities',
         'description',
         'image',
+        'images', // Array of up to 3 images
         'is_available',
         'contact_name',
         'contact_phone',
@@ -23,6 +24,7 @@ class Room extends Model
 
     protected $casts = [
         'facilities' => 'array',
+        'images' => 'array',
         'is_available' => 'boolean',
     ];
 

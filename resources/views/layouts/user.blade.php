@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'User Dashboard') - Perpustakaan Unand</title>
+    <title>@yield('title', 'User Dashboard') - SIPRUS</title>
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <style>
         .user-header {
@@ -55,10 +55,10 @@
         <div class="container">
             <div class="header-content" style="padding: 1rem 0;">
                 <div class="logo">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo Perpustakaan" class="logo-img">
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo SIPRUS" class="logo-img">
                     <div class="logo-text">
-                        <h1>Perpustakaan</h1>
-                        <p>Universitas Andalas</p>
+                        <h1 style="color: #B8985F;">SIPRUS</h1>
+                        <p style="font-size: 0.65rem;">Sistem Peminjaman Ruang Pustaka</p>
                     </div>
                 </div>
 
@@ -138,6 +138,55 @@
     <main style="background: white; min-height: calc(100vh - 80px);">
         @yield('content')
     </main>
+
+    <!-- Footer -->
+    <footer
+        style="background: linear-gradient(135deg, #1a3a3a 0%, #0d4d4d 100%); color: white; padding: 3rem 0 1.5rem;">
+        <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-bottom: 2rem;">
+                <!-- About -->
+                <div>
+                    <h3 style="color: #B8985F; font-weight: 700; margin-bottom: 1rem; font-size: 1.125rem;">TENTANG</h3>
+                    <p style="color: #ccc; line-height: 1.8; font-size: 0.9rem;">
+                        SIPRUS (Sistem Informasi Peminjaman Ruang Perpustakaan Universitas Andalas) dibuat untuk
+                        mempermudah sivitas akademika dalam melihat
+                        ketersediaan, memesan ruangan, dan memantau status peminjaman secara online dan real-time tanpa
+                        proses manual.
+                    </p>
+                </div>
+                <!-- Quick Links -->
+                <div>
+                    <h3 style="color: #B8985F; font-weight: 700; margin-bottom: 1rem; font-size: 1.125rem;">LINK CEPAT
+                    </h3>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 0.75rem;">
+                            <a href="{{ route('user.dashboard') }}"
+                                style="color: #ccc; text-decoration: none; font-size: 0.9rem; transition: color 0.2s;">Beranda</a>
+                        </li>
+                        <li style="margin-bottom: 0.75rem;">
+                            <a href="{{ route('user.rooms') }}"
+                                style="color: #ccc; text-decoration: none; font-size: 0.9rem; transition: color 0.2s;">Daftar
+                                Ruangan</a>
+                        </li>
+                        <li style="margin-bottom: 0.75rem;">
+                            <a href="{{ route('user.announcements.index') }}"
+                                style="color: #ccc; text-decoration: none; font-size: 0.9rem; transition: color 0.2s;">Pengumuman</a>
+                        </li>
+                        <li style="margin-bottom: 0.75rem;">
+                            <a href="{{ route('user.terms.index') }}"
+                                style="color: #ccc; text-decoration: none; font-size: 0.9rem; transition: color 0.2s;">Syarat
+                                & Ketentuan</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Bottom -->
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; text-align: center;">
+                <p style="color: #999; font-size: 0.875rem; margin: 0;">&copy; 2025 SIPRUS by Tim SIPRUS<br>Universitas
+                    Andalas</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="{{ asset('js/main.js') }}"></script>
 </body>

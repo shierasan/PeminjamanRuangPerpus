@@ -7,8 +7,19 @@
         <div style="background: white; border-radius: 12px; padding: 2.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
             <h1 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 2rem;">Form Tambah Ruangan</h1>
 
-            <form action="{{ route('admin.rooms.store') }}" method="POST" enctype="multipart/form-data"
-                onsubmit="return confirm('Apakah Anda yakin ingin menambah ruangan ini?');">
+            {{-- Error Display --}}
+            @if ($errors->any())
+                <div
+                    style="background: #fef2f2; border: 1px solid #ef4444; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                    <ul style="margin: 0; padding-left: 1.25rem; color: #dc2626;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <form action="{{ route('admin.rooms.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 {{-- Nama Ruangan --}}
@@ -103,24 +114,76 @@
                     </div>
                 </div>
 
-                {{-- Dokumentasi Ruangan --}}
+                {{-- Dokumentasi Ruangan (3 Separate Inputs) --}}
                 <div style="margin-bottom: 2rem;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1a1a1a;">Dokumentasi
-                        Ruangan</label>
-                    <div onclick="document.getElementById('imageUpload').click()"
-                        style="border: 2px dashed #ddd; border-radius: 12px; padding: 3rem 2rem; text-align: center; cursor: pointer; background: #fafafa; transition: all 0.3s;"
-                        onmouseover="this.style.borderColor='#B8985F'; this.style.background='#fcfcfc'"
-                        onmouseout="this.style.borderColor='#ddd'; this.style.background='#fafafa'">
-                        <svg width="48" height="48" fill="none" stroke="#999" viewBox="0 0 24 24"
-                            style="margin: 0 auto 1rem;">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                            </path>
-                        </svg>
-                        <div style="font-weight: 500; color: #666; margin-bottom: 0.25rem;">Klik atau drag and drop untuk
-                            upload</div>
-                        <div style="font-size: 0.875rem; color: #999;">PNG, JPG, JPEG</div>
-                        <input type="file" id="imageUpload" name="image" accept=".png,.jpg,.jpeg" style="display: none;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1a1a1a;">Foto Ruangan
+                        (Maksimal 3 foto)</label>
+                    <p style="font-size: 0.875rem; color: #666; margin-bottom: 1rem;">Foto pertama akan menjadi foto profil
+                        ruangan.</p>
+
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        {{-- Photo 1 (Profile) --}}
+                        <div style="width: 140px;">
+                            <div id="preview1"
+                                style="display: none; position: relative; width: 140px; height: 140px; border-radius: 8px; overflow: hidden; border: 2px solid #B8985F; margin-bottom: 0.5rem;">
+                                <img id="img1" src="" style="width: 100%; height: 100%; object-fit: cover;">
+                                <span
+                                    style="position: absolute; top: 4px; left: 4px; background: #B8985F; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px;">Profil</span>
+                                <button type="button" onclick="clearImage(1)"
+                                    style="position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(239,68,68,0.9); border: none; border-radius: 50%; color: white; cursor: pointer; font-size: 12px;">×</button>
+                            </div>
+                            <div id="upload1" onclick="document.getElementById('image1').click()"
+                                style="width: 140px; height: 140px; border: 2px dashed #B8985F; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: #fffbf0;">
+                                <svg width="24" height="24" fill="none" stroke="#B8985F" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                <div style="font-size: 0.75rem; color: #B8985F; margin-top: 0.5rem; font-weight: 600;">Foto
+                                    Profil</div>
+                            </div>
+                            <input type="file" id="image1" name="images[]" accept=".png,.jpg,.jpeg" style="display: none;"
+                                onchange="previewSingle(this, 1)">
+                        </div>
+
+                        {{-- Photo 2 --}}
+                        <div style="width: 140px;">
+                            <div id="preview2"
+                                style="display: none; position: relative; width: 140px; height: 140px; border-radius: 8px; overflow: hidden; border: 2px solid #ddd; margin-bottom: 0.5rem;">
+                                <img id="img2" src="" style="width: 100%; height: 100%; object-fit: cover;">
+                                <button type="button" onclick="clearImage(2)"
+                                    style="position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(239,68,68,0.9); border: none; border-radius: 50%; color: white; cursor: pointer; font-size: 12px;">×</button>
+                            </div>
+                            <div id="upload2" onclick="document.getElementById('image2').click()"
+                                style="width: 140px; height: 140px; border: 2px dashed #ddd; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: #fafafa;">
+                                <svg width="24" height="24" fill="none" stroke="#999" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                <div style="font-size: 0.75rem; color: #999; margin-top: 0.5rem;">Foto 2</div>
+                            </div>
+                            <input type="file" id="image2" name="images[]" accept=".png,.jpg,.jpeg" style="display: none;"
+                                onchange="previewSingle(this, 2)">
+                        </div>
+
+                        {{-- Photo 3 --}}
+                        <div style="width: 140px;">
+                            <div id="preview3"
+                                style="display: none; position: relative; width: 140px; height: 140px; border-radius: 8px; overflow: hidden; border: 2px solid #ddd; margin-bottom: 0.5rem;">
+                                <img id="img3" src="" style="width: 100%; height: 100%; object-fit: cover;">
+                                <button type="button" onclick="clearImage(3)"
+                                    style="position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(239,68,68,0.9); border: none; border-radius: 50%; color: white; cursor: pointer; font-size: 12px;">×</button>
+                            </div>
+                            <div id="upload3" onclick="document.getElementById('image3').click()"
+                                style="width: 140px; height: 140px; border: 2px dashed #ddd; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: #fafafa;">
+                                <svg width="24" height="24" fill="none" stroke="#999" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                <div style="font-size: 0.75rem; color: #999; margin-top: 0.5rem;">Foto 3</div>
+                            </div>
+                            <input type="file" id="image3" name="images[]" accept=".png,.jpg,.jpeg" style="display: none;"
+                                onchange="previewSingle(this, 3)">
+                        </div>
                     </div>
                 </div>
 
@@ -138,4 +201,23 @@
             </form>
         </div>
     </div>
+
+    <script>
+        function previewSingle(input, num) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('img' + num).src = e.target.result;
+                    document.getElementById('preview' + num).style.display = 'block';
+                    document.getElementById('upload' + num).style.display = 'none';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        function clearImage(num) {
+            document.getElementById('image' + num).value = '';
+            document.getElementById('preview' + num).style.display = 'none';
+            document.getElementById('upload' + num).style.display = 'flex';
+        }
+    </script>
 @endsection

@@ -18,12 +18,13 @@
                     </p>
                 </div>
 
-                <select
-                    style="padding: 0.75rem 1.5rem; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 0.875rem;">
-                    <option>Urutkan</option>
-                    <option>Terbaru</option>
-                    <option>Terlama</option>
-                </select>
+                <form method="GET" action="{{ route('user.history') }}" id="sortForm">
+                    <select name="sort" id="sortSelect" onchange="document.getElementById('sortForm').submit()"
+                        style="padding: 0.75rem 1.5rem; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 0.875rem;">
+                        <option value="desc" {{ request('sort', 'desc') === 'desc' ? 'selected' : '' }}>Terbaru</option>
+                        <option value="asc" {{ request('sort') === 'asc' ? 'selected' : '' }}>Terlama</option>
+                    </select>
+                </form>
             </div>
 
             <!-- Table -->
@@ -64,10 +65,26 @@
                                     </td>
                                     <td style="padding: 1rem; font-size: 0.875rem;">
                                         {{ date('H:i', strtotime($booking->start_time)) }} -
-                                        {{ date('H:i', strtotime($booking->end_time)) }}</td>
+                                        {{ date('H:i', strtotime($booking->end_time)) }}
+                                    </td>
                                     <td style="padding: 1rem; font-size: 0.875rem;">{{ $booking->room->name }}</td>
                                     <td style="padding: 1rem;">
-                                        @if($booking->status === 'pending')
+                                        @if($booking->status === 'cancelled')
+                                            {{-- Cancelled status - Yellow --}}
+                                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <span
+                                                    style="width: 10px; height: 10px; background: #f59e0b; border-radius: 50%; display: inline-block;"></span>
+                                                <span style="color: #f59e0b; font-size: 0.875rem; font-weight: 500;">Pembatalan</span>
+                                            </div>
+                                        @elseif($booking->cancellation_requested && $booking->cancellation_status === 'pending')
+                                            {{-- Waiting for cancellation approval --}}
+                                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <span
+                                                    style="width: 10px; height: 10px; background: #a855f7; border-radius: 50%; display: inline-block;"></span>
+                                                <span style="color: #a855f7; font-size: 0.875rem; font-weight: 500;">Menunggu
+                                                    Pembatalan</span>
+                                            </div>
+                                        @elseif($booking->status === 'pending')
                                             <div style="display: flex; align-items: center; gap: 0.5rem;">
                                                 <span
                                                     style="width: 10px; height: 10px; background: #f59e0b; border-radius: 50%; display: inline-block;"></span>
@@ -86,49 +103,48 @@
                                                     style="width: 10px; height: 10px; background: #ef4444; border-radius: 50%; display: inline-block;"></span>
                                                 <span style="color: #ef4444; font-size: 0.875rem; font-weight: 500;">Ditolak</span>
                                             </div>
-                                        @elseif($booking->cancellation_requested === true && $booking->cancellation_status === 'pending')
-                                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                                <span
-                                                    style="width: 10px; height: 10px; background: #a855f7; border-radius: 50%; display: inline-block;"></span>
-                                                <span style="color: #a855f7; font-size: 0.875rem; font-weight: 500;">Menunggu
-                                                    Pembatalan</span>
-                                            </div>
-                                        @elseif($booking->cancellation_status === 'approved')
-                                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                                <span
-                                                    style="width: 10px; height: 10px; background: #9ca3af; border-radius: 50%; display: inline-block;"></span>
-                                                <span style="color: #9ca3af; font-size: 0.875rem; font-weight: 500;">Dibatalkan</span>
-                                            </div>
                                         @endif
                                     </td>
                                     <td style="padding: 1rem;">
                                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                            @if($booking->status === 'pending')
+                                            @if($booking->status === 'cancelled')
                                                 <a href="{{ route('user.bookings.detail', $booking->id) }}"
-                                                   style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center;">
+                                                    style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center;">
+                                                    Lihat Detail
+                                                </a>
+                                            @elseif($booking->status === 'pending')
+                                                <a href="{{ route('user.bookings.detail', $booking->id) }}"
+                                                    style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center;">
                                                     Menunggu Persetujuan
                                                 </a>
                                             @elseif($booking->status === 'approved')
                                                 <a href="{{ route('user.bookings.detail', $booking->id) }}"
-                                                   style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center;">
+                                                    style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center;">
                                                     Lihat Detail
                                                 </a>
                                             @elseif($booking->status === 'rejected')
                                                 <a href="{{ route('user.bookings.detail', $booking->id) }}"
-                                                   style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center;">
+                                                    style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center;">
                                                     Lihat Alasan
                                                 </a>
                                             @endif
-                                            
+
                                             @if($booking->status === 'pending')
-                                            <button
-                                                style="padding: 0.5rem; background: #fee2e2; border: none; border-radius: 6px; cursor: pointer;">
-                                                <svg width="16" height="16" fill="#dc2626" viewBox="0 0 24 24">
-                                                    <path
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                                    </path>
-                                                </svg>
-                                            </button>
+                                                <form action="{{ route('user.bookings.delete', $booking->id) }}" method="POST"
+                                                    onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengajuan ini?')"
+                                                    style="margin: 0;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                        style="padding: 0.5rem; background: #fee2e2; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                                        <svg width="16" height="16" fill="none" stroke="#dc2626" stroke-width="2"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                                            </path>
+                                                        </svg>
+                                                    </button>
+                                                </form>
                                             @endif
                                         </div>
                                     </td>

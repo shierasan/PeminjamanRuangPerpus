@@ -42,7 +42,18 @@ class AdminCancellationController extends Controller
             'status' => 'cancelled'
         ]);
 
-        return redirect()->back()->with('success', 'Pembatalan disetujui');
+        // Send notification to user
+        $booking->load('room');
+        \App\Models\Notification::create([
+            'user_id' => $booking->user_id,
+            'booking_id' => $booking->id,
+            'type' => 'cancellation_approved',
+            'title' => 'Pembatalan Disetujui',
+            'message' => 'Pembatalan peminjaman ruangan ' . $booking->room->name . ' pada ' . $booking->booking_date->format('d M Y') . ' telah disetujui. Ruangan kini tersedia untuk peminjam lain.',
+            'link' => route('user.bookings.detail', $booking->id),
+        ]);
+
+        return redirect()->back()->with('success', 'Pembatalan disetujui. Ruangan kini tersedia untuk peminjam lain.');
     }
 
     public function reject($id)
@@ -51,6 +62,17 @@ class AdminCancellationController extends Controller
         $booking->update([
             'cancellation_status' => 'rejected',
             'cancellation_requested' => false
+        ]);
+
+        // Send notification to user
+        $booking->load('room');
+        \App\Models\Notification::create([
+            'user_id' => $booking->user_id,
+            'booking_id' => $booking->id,
+            'type' => 'cancellation_rejected',
+            'title' => 'Pembatalan Ditolak',
+            'message' => 'Pembatalan peminjaman ruangan ' . $booking->room->name . ' pada ' . $booking->booking_date->format('d M Y') . ' ditolak. Silakan tetap hadir sesuai jadwal.',
+            'link' => route('user.bookings.detail', $booking->id),
         ]);
 
         return redirect()->back()->with('success', 'Pembatalan ditolak');

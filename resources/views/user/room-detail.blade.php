@@ -38,23 +38,53 @@
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem;">
                         @php
                             $facilities = is_array($room->facilities) ? $room->facilities : json_decode($room->facilities, true) ?? [];
-                            $facilityIcons = [
-                                'Wi-Fi' => 'M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0',
-                                'WiFi' => 'M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0',
-                                'AC' => 'M12 2v20M2 12h20',
-                                'Proyektor' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
-                                'Printer' => 'M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z',
-                            ];
                         @endphp
                         @foreach($facilities as $facility)
                             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div
-                                    style="width: 40px; height: 40px; background: #E8F5E9; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                                    <svg width="20" height="20" fill="none" stroke="#008080" stroke-width="2"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="{{ $facilityIcons[$facility] ?? 'M5 13l4 4L19 7' }}"></path>
-                                    </svg>
+                                <div style="width: 40px; height: 40px; background: #E8F5E9; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    @if(strtolower($facility) == 'wi-fi' || strtolower($facility) == 'wifi')
+                                        {{-- WiFi Icon --}}
+                                        <svg width="20" height="20" fill="none" stroke="#008080" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
+                                        </svg>
+                                    @elseif(strtolower($facility) == 'ac')
+                                        {{-- AC/Snowflake Icon --}}
+                                        <svg width="20" height="20" fill="none" stroke="#008080" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18m0-18l4 4m-4-4L8 7m4 14l4-4m-4 4l-4-4m-5-5h18M3 12l4-4M3 12l4 4m14-4l-4-4m4 4l-4 4"></path>
+                                        </svg>
+                                    @elseif(strtolower($facility) == 'proyektor' || strtolower($facility) == 'projector')
+                                        {{-- Projector Icon --}}
+                                        <svg width="20" height="20" fill="none" stroke="#008080" stroke-width="2" viewBox="0 0 24 24">
+                                            <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                                            <circle cx="16" cy="12" r="3"></circle>
+                                            <line x1="6" y1="10" x2="10" y2="10"></line>
+                                            <line x1="6" y1="14" x2="10" y2="14"></line>
+                                        </svg>
+                                    @elseif(strtolower($facility) == 'printer')
+                                        {{-- Printer Icon --}}
+                                        <svg width="20" height="20" fill="none" stroke="#008080" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                                        </svg>
+                                    @elseif(strtolower($facility) == 'komputer' || strtolower($facility) == 'computer')
+                                        {{-- Computer/Desktop Icon --}}
+                                        <svg width="20" height="20" fill="none" stroke="#008080" stroke-width="2" viewBox="0 0 24 24">
+                                            <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                                        </svg>
+                                    @elseif(strtolower($facility) == 'sound system' || strtolower($facility) == 'speaker')
+                                        {{-- Speaker/Sound System Icon --}}
+                                        <svg width="20" height="20" fill="none" stroke="#008080" stroke-width="2" viewBox="0 0 24 24">
+                                            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+                                            <circle cx="12" cy="14" r="4"></circle>
+                                            <circle cx="12" cy="6" r="2"></circle>
+                                        </svg>
+                                    @else
+                                        {{-- Default checkmark for unknown facilities --}}
+                                        <svg width="20" height="20" fill="none" stroke="#008080" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    @endif
                                 </div>
                                 <span style="font-weight: 500;">{{ $facility }}</span>
                             </div>
@@ -79,34 +109,70 @@
                     </div>
                 </div>
 
-                <!-- Right: Room Photo -->
+                <!-- Right: Room Photos Gallery -->
                 <div>
-                    @if($room->image)
-                        <img src="{{ asset('storage/' . $room->image) }}" alt="{{ $room->name }}"
-                            style="width: 100%; height: 400px; object-fit: cover; border-radius: 12px; margin-bottom: 1rem;">
+                    @php
+                        // Get all images - check images array first, then fall back to single image
+                        $allImages = $room->images ?? [];
+                        if (empty($allImages) && $room->image) {
+                            $allImages = [$room->image];
+                        }
+                    @endphp
+
+                    @if(count($allImages) > 0)
+                        <!-- Main Photo Display -->
+                        <div id="mainPhotoContainer" style="position: relative; margin-bottom: 1rem;">
+                            <img id="mainPhoto" src="{{ asset('storage/' . $allImages[0]) }}" alt="{{ $room->name }}"
+                                style="width: 100%; height: 400px; object-fit: cover; border-radius: 12px;">
+                            @if(count($allImages) > 1)
+                                <div
+                                    style="position: absolute; bottom: 1rem; right: 1rem; background: rgba(0,0,0,0.6); color: white; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem;">
+                                    <span id="photoCounter">1</span> / {{ count($allImages) }}
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Photo Thumbnails -->
+                        @if(count($allImages) > 1)
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                @foreach($allImages as $index => $image)
+                                    <div onclick="showPhoto({{ $index }})" id="thumb{{ $index }}"
+                                        style="width: 80px; height: 80px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 3px solid {{ $index === 0 ? '#B8985F' : 'transparent' }}; transition: all 0.2s;">
+                                        <img src="{{ asset('storage/' . $image) }}"
+                                            style="width: 100%; height: 100%; object-fit: cover;">
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
                     @else
+                        <!-- No Photo Placeholder -->
                         <div
-                            style="width: 100%; height: 400px; background: linear-gradient(135deg, #B8985F, #9d7d4b); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                            style="width: 100%; height: 400px; background: linear-gradient(135deg, #B8985F, #9d7d4b); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 1rem;">
                             <svg width="80" height="80" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                                 </path>
                             </svg>
+                            <span style="color: white; margin-top: 1rem; font-weight: 500;">Belum ada foto</span>
                         </div>
                     @endif
 
-                    <!-- Photo thumbnails if multiple -->
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
-                        @for($i = 0; $i < 4; $i++)
-                            <div
-                                style="width: 100%; height: 80px; background: #f0f0f0; border-radius: 8px; border: 2px solid {{ $i == 0 ? '#B8985F' : 'transparent' }}; overflow: hidden;">
-                                @if($room->image && $i == 0)
-                                    <img src="{{ asset('storage/' . $room->image) }}"
-                                        style="width: 100%; height: 100%; object-fit: cover;">
-                                @endif
-                            </div>
-                        @endfor
-                    </div>
+                    <script>
+                        const roomImages = @json($allImages);
+                        let currentPhotoIndex = 0;
+
+                        function showPhoto(index) {
+                            currentPhotoIndex = index;
+                            document.getElementById('mainPhoto').src = "{{ asset('storage') }}/" + roomImages[index];
+                            document.getElementById('photoCounter').textContent = (index + 1);
+
+                            // Update thumbnail borders
+                            roomImages.forEach((_, i) => {
+                                document.getElementById('thumb' + i).style.border =
+                                    i === index ? '3px solid #B8985F' : '3px solid transparent';
+                            });
+                        }
+                    </script>
                 </div>
             </div>
         </div>
@@ -207,6 +273,14 @@
             return date < today;
         }
 
+        // H-2 rule: users can only book at least 2 days in advance
+        function isWithinMinBookingDays(year, month, day) {
+            const date = new Date(year, month, day);
+            const minBookingDate = new Date(today);
+            minBookingDate.setDate(minBookingDate.getDate() + 2); // H-2 = 2 days from now
+            return date < minBookingDate;
+        }
+
         function renderCalendar() {
             const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             const year = currentDate.getFullYear();
@@ -240,6 +314,13 @@
                 // Check if it's a past date
                 if (isPastDate(year, month, day)) {
                     bgColor = '#e5e7eb';
+                    textColor = '#9ca3af';
+                    cursor = 'not-allowed';
+                    isClickable = false;
+                }
+                // Check if within H-2 minimum booking days
+                else if (isWithinMinBookingDays(year, month, day)) {
+                    bgColor = '#f3f4f6'; // Light grey for H-2 blocked
                     textColor = '#9ca3af';
                     cursor = 'not-allowed';
                     isClickable = false;

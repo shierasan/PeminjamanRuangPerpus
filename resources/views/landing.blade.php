@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Peminjaman Ruangan - Perpustakaan Unand</title>
+    <title>SIPRUS - Sistem Peminjaman Ruang Pustaka</title>
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
 
@@ -14,10 +14,10 @@
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo Perpustakaan" class="logo-img">
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo SIPRUS" class="logo-img">
                     <div class="logo-text">
-                        <h1>Perpustakaan</h1>
-                        <p>Universitas Andalas</p>
+                        <h1 style="color: #B8985F;">SIPRUS</h1>
+                        <p style="font-size: 0.65rem;">Sistem Peminjaman Ruang Pustaka</p>
                     </div>
                 </div>
 
@@ -69,8 +69,9 @@
                 <div>
                     <h1
                         style="font-size: 3rem; font-weight: 700; line-height: 1.2; margin-bottom: 1.5rem; color: #1a1a1a;">
-                        Sistem Peminjaman Ruangan Perpustakaan
-                        <span style="color: #008080;">Universitas Andalas</span>
+                        <span style="color: #B8985F;">SIPRUS</span><br>
+                        Sistem Peminjaman
+                        <span style="color: #008080;">Ruang Pustaka</span>
                     </h1>
                     <p style="font-size: 1.125rem; color: #666; line-height: 1.8; margin-bottom: 2rem;">
                         Sistem peminjaman ruangan perpustakaan berbasis web untuk melihat ketersediaan, mengajukan

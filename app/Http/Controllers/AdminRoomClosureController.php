@@ -75,10 +75,10 @@ class AdminRoomClosureController extends Controller
                 : \Carbon\Carbon::parse($validated['start_time'])->format('H:i') . ' - ' . \Carbon\Carbon::parse($validated['end_time'])->format('H:i');
 
             $title = "Pemberitahuan Penutupan Ruangan - {$roomName}";
-            $content = "Diberitahukan kepada seluruh pengguna bahwa {$roomName} akan **TUTUP** pada:\n\n";
-            $content .= "📅 **Tanggal:** {$closureDate}\n";
-            $content .= "🕐 **Waktu:** {$timeInfo}\n";
-            $content .= "📝 **Alasan:** {$validated['reason']}\n\n";
+            $content = "Diberitahukan kepada seluruh pengguna bahwa {$roomName} akan TUTUP.\n\n";
+            $content .= "Tanggal: {$closureDate}\n";
+            $content .= "Waktu: {$timeInfo}\n";
+            $content .= "Alasan: {$validated['reason']}\n\n";
             $content .= "Mohon maaf atas ketidaknyamanannya. Silakan pilih ruangan atau waktu lain untuk peminjaman.";
 
             \App\Models\Announcement::create([

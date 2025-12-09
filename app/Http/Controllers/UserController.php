@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Announcement;
+use App\Models\Booking;
 
 class UserController extends Controller
 {
@@ -144,6 +145,25 @@ class UserController extends Controller
             return redirect()->back()->withInput()->with('error', 'Tidak dapat meminjam ruangan di hari Minggu.');
         }
 
+        // H-2 rule: booking must be at least 2 days in advance
+        $minBookingDate = \Carbon\Carbon::now()->addDays(2)->startOfDay();
+        if ($bookingDate->lt($minBookingDate)) {
+            return redirect()->back()->withInput()->with('error', 'Peminjaman ruangan harus dilakukan minimal H-2 (2 hari sebelumnya).');
+        }
+
+        // Max 2 hours booking duration validation
+        $startTime = \Carbon\Carbon::parse($validated['start_time']);
+        $endTime = \Carbon\Carbon::parse($validated['end_time']);
+        $durationInMinutes = $startTime->diffInMinutes($endTime);
+
+        if ($durationInMinutes > 120) { // 2 hours = 120 minutes
+            return redirect()->back()->withInput()->with('error', 'Durasi peminjaman maksimal 2 jam. Silakan sesuaikan waktu peminjaman Anda.');
+        }
+
+        if ($durationInMinutes < 30) { // Minimum 30 minutes
+            return redirect()->back()->withInput()->with('error', 'Durasi peminjaman minimal 30 menit.');
+        }
+
         // Check for room closure
         $closureDate = $bookingDate->format('Y-m-d');
 
@@ -251,11 +271,14 @@ class UserController extends Controller
         return redirect()->route('user.rooms')->with('success', 'Booking berhasil diajukan!');
     }
 
-    public function history()
+    public function history(Request $request)
     {
+        // Sort - 'desc' = Terbaru, 'asc' = Terlama
+        $sortBy = $request->get('sort', 'desc');
+
         $bookings = \App\Models\Booking::where('user_id', auth()->id())
             ->with('room')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('created_at', $sortBy)
             ->get();
 
         return view('user.history', compact('bookings'));
@@ -273,13 +296,36 @@ class UserController extends Controller
         return view('user.booking-detail', compact('booking'));
     }
 
-    public function notifications()
+    public function notifications(Request $request)
     {
-        $notifications = \App\Models\Notification::where('user_id', auth()->id())
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = \App\Models\Notification::where('user_id', auth()->id());
 
-        return view('user.notifications', compact('notifications'));
+        // Filter by type
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // Filter by read status
+        if ($request->filled('status')) {
+            if ($request->status === 'unread') {
+                $query->where('is_read', false);
+            } elseif ($request->status === 'read') {
+                $query->where('is_read', true);
+            }
+        }
+
+        // Sort
+        $sortBy = $request->get('sort', 'desc');
+        $notifications = $query->orderBy('created_at', $sortBy)->get();
+
+        // Get unique types for filter dropdown
+        $types = \App\Models\Notification::where('user_id', auth()->id())
+            ->distinct()
+            ->pluck('type')
+            ->filter()
+            ->values();
+
+        return view('user.notifications', compact('notifications', 'types'));
     }
 
     public function markNotificationAsRead($id)
@@ -322,5 +368,66 @@ class UserController extends Controller
         $announcement = Announcement::findOrFail($id);
 
         return view('user.announcements.show', compact('announcement'));
+    }
+
+    /**
+     * Delete a pending booking
+     */
+    public function deletePendingBooking($id)
+    {
+        $booking = Booking::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->where('status', 'pending')
+            ->firstOrFail();
+
+        // Delete associated files
+        if ($booking->letter_file) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($booking->letter_file);
+        }
+        if ($booking->rundown_file) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($booking->rundown_file);
+        }
+
+        $booking->delete();
+
+        return redirect()->route('user.history')->with('success', 'Pengajuan peminjaman berhasil dihapus.');
+    }
+
+    /**
+     * Request cancellation for an approved booking
+     */
+    public function requestCancellation(Request $request, $id)
+    {
+        $request->validate([
+            'cancellation_reason' => 'required|string|max:500',
+        ]);
+
+        $booking = Booking::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->where('status', 'approved')
+            ->firstOrFail();
+
+        // Immediately cancel the booking - no admin approval needed
+        $booking->update([
+            'status' => 'cancelled',
+            'cancellation_requested' => true,
+            'cancellation_status' => 'approved',
+            'cancellation_reason' => $request->cancellation_reason,
+        ]);
+
+        // Notify admin about the cancellation
+        $admins = \App\Models\User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            \App\Models\Notification::create([
+                'user_id' => $admin->id,
+                'booking_id' => $booking->id,
+                'type' => 'booking_cancelled',
+                'title' => 'Peminjaman Dibatalkan',
+                'message' => 'User ' . auth()->user()->name . ' membatalkan peminjaman ruangan ' . $booking->room->name . ' pada ' . $booking->booking_date->format('d M Y') . '. Ruangan kini tersedia.',
+                'link' => route('admin.bookings.show', $booking->id),
+            ]);
+        }
+
+        return redirect()->route('user.bookings.detail', $booking->id)->with('success', 'Peminjaman berhasil dibatalkan. Ruangan kini tersedia untuk peminjam lain.');
     }
 }

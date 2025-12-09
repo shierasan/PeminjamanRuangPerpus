@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Daftar Ruangan - Perpustakaan Unand')
+@section('title', 'Daftar Ruangan - SIPRUS')
 
 @section('content')
     <!-- ROOM LIST SECTION -->
     <section class="section" style="padding-top: 3rem; background-color: #F5F7FA;">
         <div class="container">
-            <h2 style="text-align: center; margin-bottom: 1rem;">Daftar Ruangan Perpustakaan</h2>
+            <h2 style="text-align: center; margin-bottom: 1rem;">Daftar Ruangan</h2>
             <p style="text-align: center; color: var(--color-text-light); margin-bottom: 3rem;">
                 Pilih ruangan yang ingin digunakan dan lanjutkan ke peminjaman.
             </p>
@@ -138,7 +138,7 @@
                 </div>
 
                 <!-- Sidebar -->
-                <div>
+                <div style="height: fit-content;">
                     <!-- Calendar Widget -->
                     <div class="card" style="margin-bottom: 1.5rem;">
                         <h3 style="font-size: 1.25rem; font-weight: 700; text-align: center; margin-bottom: 1.5rem;">
@@ -242,6 +242,7 @@
         // Calendar with real booking data
         let currentDate = new Date();
         const allBookings = @json($allBookings);
+        const allClosures = @json($allClosures);
         const totalRooms = {{ $totalRooms }};
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -256,8 +257,20 @@
             return date < today;
         }
 
+        // H-2 rule: booking must be at least 2 days in advance
+        function isWithinMinBookingDays(year, month, day) {
+            const date = new Date(year, month, day);
+            const minBookingDate = new Date(today);
+            minBookingDate.setDate(minBookingDate.getDate() + 2);
+            return date < minBookingDate;
+        }
+
         function getBookingInfo(dateStr) {
             return allBookings[dateStr] || { count: 0, approved_count: 0, rooms_booked: 0 };
+        }
+
+        function getClosureInfo(dateStr) {
+            return allClosures[dateStr] || { all_rooms_closed: false, has_closures: false, count: 0 };
         }
 
         function renderCalendar() {
@@ -290,6 +303,7 @@
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const isCurrentDay = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
                 const bookingInfo = getBookingInfo(dateStr);
+                const closureInfo = getClosureInfo(dateStr);
 
                 let bgColor = 'var(--color-success)'; // Default: Green (available)
                 let textColor = 'white';
@@ -299,9 +313,24 @@
                     bgColor = '#e5e7eb';
                     textColor = '#9ca3af';
                 }
+                // H-2 rule - light grey
+                else if (isWithinMinBookingDays(year, month, day)) {
+                    bgColor = '#f3f4f6';
+                    textColor = '#9ca3af';
+                }
                 // Sunday - red (closed)
                 else if (isSunday(year, month, day)) {
                     bgColor = '#EF4444';
+                    textColor = 'white';
+                }
+                // All rooms closed (whole day) - dark red/maroon
+                else if (closureInfo.all_rooms_closed) {
+                    bgColor = '#991b1b';
+                    textColor = 'white';
+                }
+                // Has some closures (partial) - yellow
+                else if (closureInfo.has_closures) {
+                    bgColor = 'var(--color-warning)';
                     textColor = 'white';
                 }
                 // All rooms booked - red (if rooms_booked >= totalRooms)

@@ -56,7 +56,7 @@
                                 Tanggal</th>
                             <th
                                 style="padding: 1rem; text-align: left; font-weight: 600; color: #333; border-bottom: 2px solid #e0e0e0;">
-                                Waktu</th>
+                                Alasan Pembatalan</th>
                             <th
                                 style="padding: 1rem; text-align: left; font-weight: 600; color: #333; border-bottom: 2px solid #e0e0e0;">
                                 Aksi</th>
@@ -68,9 +68,16 @@
                                 <td style="padding: 1rem;">{{ $cancellation->room->name }}</td>
                                 <td style="padding: 1rem;">{{ $cancellation->event_name ?? '-' }}</td>
                                 <td style="padding: 1rem;">{{ $cancellation->organizer ?? $cancellation->user->name }}</td>
-                                <td style="padding: 1rem;">{{ $cancellation->booking_date->format('d M Y') }}</td>
-                                <td style="padding: 1rem;">{{ date('H:i', strtotime($cancellation->start_time)) }} -
-                                    {{ date('H:i', strtotime($cancellation->end_time)) }}</td>
+                                <td style="padding: 1rem;">
+                                    {{ $cancellation->booking_date->format('d M Y') }}<br>
+                                    <small style="color: #666;">{{ date('H:i', strtotime($cancellation->start_time)) }} -
+                                        {{ date('H:i', strtotime($cancellation->end_time)) }}</small>
+                                </td>
+                                <td style="padding: 1rem; max-width: 200px;">
+                                    <div style="color: #374151; font-size: 0.875rem; line-height: 1.4;">
+                                        {{ $cancellation->cancellation_reason ?? '-' }}
+                                    </div>
+                                </td>
                                 <td style="padding: 1rem;">
                                     @if($cancellation->cancellation_status === 'pending' || $cancellation->cancellation_status === null)
                                         <div style="display: flex; gap: 0.5rem;">
@@ -93,7 +100,7 @@
                                         </div>
                                     @elseif($cancellation->cancellation_status === 'approved')
                                         <span
-                                            style="padding: 0.4rem 1rem; background: #10b981; color: white; border-radius: 6px; font-size: 0.875rem; display: inline-block;">Disetujui</span>
+                                            style="padding: 0.4rem 1rem; background: #f59e0b; color: white; border-radius: 6px; font-size: 0.875rem; display: inline-block;">Dibatalkan</span>
                                     @else
                                         <span
                                             style="padding: 0.4rem 1rem; background: #ef4444; color: white; border-radius: 6px; font-size: 0.875rem; display: inline-block;">Ditolak</span>
